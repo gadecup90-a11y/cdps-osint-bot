@@ -1,7 +1,7 @@
 fastapi
 uvicorn
-requests
 pydantic
+requests
 duckduckgo-search
 phonenumbers
-python-telegram-bot
+python-multipart
