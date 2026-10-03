@@ -13,7 +13,7 @@ TOKEN = "8596194498:AAFuL6e9NQ5Iu3MHjAD_brMWZHipYbWSfdA"
 WEB_APP_URL = "https://cdps-osint-bot.onrender.com"
 RUTA_DB = "ine.db"
 
-app = FastAPI(title="OSINT CDPS Suite - Enterprise Neural Core", version="15.0")
+app = FastAPI(title="OSINT CDPS Suite - Enterprise Neural Core", version="16.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -35,7 +35,7 @@ class MasivoRequest(BaseModel):
     queries: List[str]
     type: str
 
-# MOTOR DE BÚSQUEDA TÁCTICA (COMPARTIDO CHAT, WEB Y MASIVO)
+# MOTOR DE BÚSQUEDA TÁCTICA REAL (CONECTADO A ine.db)
 def ejecutar_motor_busqueda(modo: str, query: str):
     q_up = query.strip().upper()
     resultados = []
@@ -118,13 +118,12 @@ def ejecutar_motor_busqueda(modo: str, query: str):
     return resultados
 
 
-# 1. WEBHOOK DE TELEGRAM (BOT INTERNO Y BOTONES DE CHAT)
+# 1. WEBHOOK DE TELEGRAM (SIN CANAL OBLIGATORIO)
 @app.post("/webhook")
 async def telegram_webhook(req: Request):
     try:
         data = await req.json()
         
-        # Mensajes de texto en el chat
         if "message" in data and "text" in data["message"]:
             mensaje = data["message"]
             texto = mensaje["text"].strip()
@@ -168,7 +167,6 @@ async def telegram_webhook(req: Request):
                 }
                 requests.post(f"https://api.telegram.org/bot{TOKEN}/sendMessage", json=payload)
 
-        # Clics en botones interactivos dentro del chat
         elif "callback_query" in data:
             cb = data["callback_query"]
             chat_id = cb["message"]["chat"]["id"]
@@ -182,7 +180,7 @@ async def telegram_webhook(req: Request):
                 res = ejecutar_motor_busqueda("ine", "CERVANDO")
                 respuesta_texto = "\n\n".join(res)
             elif callback_data == "cmd_status":
-                respuesta_texto = "🟢 *Estado del Nodo*: Operativo al 100%. Conectado a `ine.db` y pasarelas neuronales."
+                respuesta_texto = "🟢 *Estado del Nodo*: Operativo al 100%. Conectado a `ine.db`."
 
             payload = {
                 "chat_id": chat_id,
@@ -197,7 +195,7 @@ async def telegram_webhook(req: Request):
         return {"error": str(e)}
 
 
-# 2. ENDPOINT API PARA LA MINI APP WEB (BÚSQUEDA INDIVIDUAL)
+# 2. ENDPOINT API PARA BÚSQUEDA INDIVIDUAL (WEB)
 @app.post("/api/buscar")
 def api_buscar(data: QueryRequest):
     user_id = data.user_id
@@ -213,7 +211,7 @@ def api_buscar(data: QueryRequest):
     return {"status": "success", "data": [{"detalles": r} for r in resultados]}
 
 
-# 3. ENDPOINT API PARA PROCESAMIENTO MASIVO (MULTITARGET / BARRIDO EN LOTE)
+# 3. ENDPOINT API PARA PROCESAMIENTO MASIVO / MULTITARGET
 @app.post("/api/masivo")
 def api_masivo(data: MasivoRequest):
     user_id = data.user_id
@@ -232,7 +230,7 @@ def api_masivo(data: MasivoRequest):
         HISTORIAL_USUARIOS[user_id] = []
     HISTORIAL_USUARIOS[user_id].insert(
         0, 
-        {"modo": f"MASIVO ({modo.upper()})", "query": f"{len(queries)} objetivos procesados en lote", "timestamp": "Hace un momento"}
+        {"modo": f"MASIVO ({modo.upper()})", "query": f"{len(queries)} objetivos en lote", "timestamp": "Hace un momento"}
     )
 
     return {
@@ -272,4 +270,4 @@ def serve_mini_app():
         with open("index.html", "r", encoding="utf-8") as f:
             return f.read()
     return "<h1>Error crítico: index.html no encontrado en la raíz del servidor.</h1>"
-            
+    
