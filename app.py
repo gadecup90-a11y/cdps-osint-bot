@@ -3,7 +3,7 @@ import sqlite3
 import requests
 import asyncio
 import threading
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -233,8 +233,7 @@ def serve_mini_app():
 # ==========================================
 # 2. CONFIGURACIÓN DEL BOT DE TELEGRAM
 # ==========================================
-TOKEN = "8896533030:AAFquO47wLBEphyUGoWLiLfneq5VEuy7eN8"
-# Reemplaza con tu URL de Render real cuando te la asigne (ej: https://tu-app.onrender.com)
+TOKEN = "8375866730:AAFQWVJjYwEkriVBK9AjkVaMwvo7ysc0oKE"
 WEB_APP_URL = os.getenv("WEB_APP_URL", "https://tu-proyecto.onrender.com")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -253,7 +252,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 def run_telegram_bot():
-    """Ejecuta el bot mediante polling en un hilo separado para no bloquear FastAPI"""
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     
@@ -263,7 +261,6 @@ def run_telegram_bot():
     print("[+] Bot de Telegram iniciado en segundo plano...")
     bot_app.run_polling()
 
-# Iniciar el bot de Telegram en un hilo independiente al arrancar la aplicación
 @app.on_event("startup")
 def startup_event():
     t = threading.Thread(target=run_telegram_bot, daemon=True)
