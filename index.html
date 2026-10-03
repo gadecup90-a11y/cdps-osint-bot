@@ -3,87 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSINT CDPS — Tactical Enterprise Suite</title>
+    <title>OSINT CDPS — Artificial Intelligence Matrix</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         :root {
-            --bg-base: #030712;
-            --panel-bg: rgba(7, 13, 25, 0.90);
-            --border-color: rgba(56, 189, 248, 0.25);
+            --bg-base: #02040a;
+            --panel-bg: rgba(6, 12, 24, 0.94);
+            --border-cyan: rgba(56, 189, 248, 0.4);
         }
         body { 
-            background: linear-gradient(rgba(3, 7, 18, 0.88), rgba(3, 7, 18, 0.95)), url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1200&auto=format&fit=crop') no-repeat center center fixed;
-            background-size: cover;
+            background: var(--bg-base);
             color: #e2e8f0; 
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+        .matrix-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 30%, #0d1b2a 0%, #02040a 80%);
+            z-index: -2;
+        }
+        .particle {
+            position: absolute;
+            width: 2px; height: 2px;
+            background: #38bdf8;
+            box-shadow: 0 0 8px #38bdf8;
+            animation: floatParticle 6s infinite linear;
+            z-index: -1;
+            opacity: 0.6;
+        }
+        @keyframes floatParticle {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
         }
         .enterprise-panel { 
             background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-cyan);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.15);
+            backdrop-filter: blur(14px);
         }
         .tool-btn {
-            background: rgba(10, 15, 28, 0.85);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            transition: all 0.15s ease-in-out;
+            background: rgba(10, 20, 38, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .tool-btn:hover {
             border-color: #38bdf8;
-            background: rgba(14, 22, 40, 0.9);
+            background: rgba(14, 30, 55, 0.95);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
         }
         .tool-btn.active {
-            background: #0284c7;
+            background: linear-gradient(135deg, #0369a1, #0284c7);
             border-color: #38bdf8;
             color: #ffffff;
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
         }
         .nav-item.active {
             color: #38bdf8;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
         }
         .nav-item.active svg {
             stroke: #38bdf8;
+            filter: drop-shadow(0 0 5px #38bdf8);
         }
         .tab-view { display: none; }
-        .tab-view.active { display: block; }
+        .tab-view.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="p-4 max-w-xl mx-auto pb-28">
 
-    <!-- HEADER CON EL LOGOTIPO OFICIAL OSINT CDPS -->
+    <div class="matrix-bg"></div>
+    <div id="particleField"></div>
+
+    <!-- HEADER EJECUTIVO CON LOGOTIPO OFICIAL OSINT CDPS -->
     <header class="enterprise-panel p-4 mb-4 rounded-xl flex justify-between items-center border-t-2 border-sky-400">
         <div class="flex items-center space-x-3.5">
-            <!-- LOGOTIPO MINIATURA OFICIAL CIRCULAR -->
-            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-sky-400 shadow-md shadow-sky-500/30 flex-shrink-0 bg-black">
-                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&auto=format&fit=crop" alt="OSINT CDPS Logo" class="w-full h-full object-cover">
+            <div class="w-12 h-12 rounded-xl overflow-hidden border-2 border-sky-400 shadow-lg shadow-sky-500/50 flex-shrink-0 bg-black relative flex items-center justify-center">
+                <span class="text-[9px] font-black text-sky-200 tracking-wider text-center leading-tight drop-shadow-[0_0_4px_#38bdf8]">OSINT<br>CDPS</span>
             </div>
             <div>
                 <h1 class="text-xs font-black tracking-wider text-white uppercase flex items-center gap-1.5">
-                    OSINT <span class="text-sky-400">CDPS</span> <span class="text-[9px] px-1.5 py-0.2 bg-sky-950 text-sky-300 rounded border border-sky-800">PRO</span>
+                    OSINT <span class="text-sky-400">CDPS</span> 
+                    <span class="text-[9px] px-1.5 py-0.2 bg-sky-950 text-sky-300 rounded border border-sky-800 animate-pulse">PRO LIVE</span>
                 </h1>
                 <p class="text-[10px] text-gray-400">OPERADOR: <span class="text-sky-300 font-semibold">CERVANDO</span></p>
             </div>
         </div>
         <div class="text-right">
             <div class="flex items-center justify-end space-x-1.5 text-[10px]">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span class="text-emerald-300 font-medium">NODO SEGURO</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping absolute"></span>
+                <span class="w-2 h-2 rounded-full bg-emerald-400 relative"></span>
+                <span class="text-emerald-300 font-bold tracking-wide">CONSCIENCIA LIVE</span>
             </div>
-            <p id="liveClock" class="text-[10px] text-gray-400 font-mono mt-0.5">--:--:--</p>
+            <p id="liveClock" class="text-[10px] text-sky-300 font-mono mt-0.5 font-bold">--:--:--</p>
         </div>
     </header>
 
     <!-- ================= VISTA 1: BÚSQUEDA / INTELIGENCIA ================= -->
     <main id="view-search" class="tab-view active space-y-4">
         
-        <!-- SELECTOR DE HERRAMIENTAS (GRID TÁCTICO) -->
+        <!-- SELECTOR DE MÓDULOS -->
         <div class="enterprise-panel p-4 rounded-xl">
             <div class="flex justify-between items-center mb-3">
-                <h2 class="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Módulos de Inteligencia</h2>
-                <span id="lblCostoActivo" class="text-[10px] text-sky-400 font-semibold">Costo: 6 Créditos</span>
+                <h2 class="text-[11px] font-bold text-gray-200 uppercase tracking-widest flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span> Módulos de Inteligencia Neural
+                </h2>
+                <span id="lblCostoActivo" class="text-[10px] text-sky-400 font-semibold bg-sky-950/80 px-2 py-0.5 rounded border border-sky-800">Costo: 6 Créditos</span>
             </div>
             
             <div class="grid grid-cols-3 gap-2 text-xs">
@@ -108,7 +139,7 @@
                     <span class="truncate">Financiero</span>
                 </button>
                 <button onclick="setHerramienta('ocr', 'OCR Visión HD', '3', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
-                    <span class="text-base">👁️️</span>
+                    <span class="text-base">👁</span>
                     <span class="truncate">OCR Visión</span>
                 </button>
                 <button onclick="setHerramienta('facial', 'Biometría Facial OSINT', '10', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1 col-span-3 items-center justify-center flex-row">
@@ -118,43 +149,45 @@
             </div>
         </div>
 
-        <!-- INPUT DE BÚSQUEDA -->
+        <!-- INPUT DE BÚSQUEDA Y MASIVO -->
         <div class="enterprise-panel p-4 rounded-xl">
             <div id="inputTextoContainer">
-                <label id="lblInputLabel" class="block text-[10px] text-gray-400 mb-1.5 uppercase tracking-wider">Parámetro de Búsqueda (Teléfono / CURP / Nombre):</label>
+                <label id="lblInputLabel" class="block text-[10px] text-sky-300 mb-1.5 uppercase tracking-wider font-semibold">Parámetro de Búsqueda (Individual o Masivo x línea):</label>
                 <div class="flex gap-2">
-                    <input type="text" id="searchInput" placeholder="Ej. +528180797772 o Juan Pérez..." class="w-full bg-black/70 border border-sky-900/50 rounded-lg p-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-sky-400 transition">
-                    <button onclick="ejecutarAnalisis()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 rounded-lg text-xs transition shadow-md whitespace-nowrap">
-                        Ejecutar →
+                    <textarea id="searchInput" rows="2" placeholder="+528180797772 o múltiples blancos..." class="w-full bg-black/80 border border-sky-900/60 rounded-lg p-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-sky-400 transition shadow-inner"></textarea>
+                    <button onclick="ejecutarAnalisis()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 rounded-lg text-xs transition shadow-lg shadow-sky-500/30 whitespace-nowrap active:scale-95 self-end py-3">
+                        Ejecutar ⚡
                     </button>
                 </div>
             </div>
 
             <div id="inputArchivoContainer" class="hidden">
-                <label class="block text-[10px] text-gray-400 mb-1.5 uppercase tracking-wider">Cargar Archivo / Fotografía Objetivo:</label>
-                <input type="file" id="fileInput" accept="image/*,.pdf" class="w-full text-xs text-gray-300 border border-sky-900/50 rounded-lg p-2 bg-black/70 file:bg-sky-950 file:text-sky-300 file:border-0 file:rounded file:text-xs file:mr-3">
-                <button onclick="ejecutarAnalisis()" class="w-full mt-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-md">
-                    Procesar Archivo →
+                <label class="block text-[10px] text-sky-300 mb-1.5 uppercase tracking-wider font-semibold">Cargar Archivo / Fotografía Objetivo:</label>
+                <input type="file" id="fileInput" accept="image/*,.pdf" class="w-full text-xs text-gray-300 border border-sky-900/60 rounded-lg p-2 bg-black/80 file:bg-sky-950 file:text-sky-300 file:border-0 file:rounded file:text-xs file:mr-3">
+                <button onclick="ejecutarAnalisis()" class="w-full mt-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-lg shadow-sky-500/30 active:scale-95">
+                    Procesar Archivo Neural ⚡
                 </button>
             </div>
         </div>
 
-        <!-- RESULTADOS TÁCTICOS CON PAGINACIÓN -->
+        <!-- RESULTADOS TÁCTICOS -->
         <div class="enterprise-panel p-4 rounded-xl">
             <div class="flex justify-between items-center mb-2.5 border-b border-sky-950 pb-2">
-                <h3 class="text-xs font-bold text-gray-200 uppercase tracking-wide">Informe Pericial / Resultados</h3>
-                <span id="contadorResultados" class="text-[10px] text-sky-400 font-mono font-semibold">0 registros</span>
+                <h3 class="text-xs font-bold text-gray-200 uppercase tracking-wide flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Informe Pericial / Resultados
+                </h3>
+                <span id="contadorResultados" class="text-[10px] text-sky-400 font-mono font-semibold bg-sky-950/60 px-2 py-0.5 rounded border border-sky-900">0 registros</span>
             </div>
             
-            <div id="resultadoTactico" class="text-xs text-gray-200 whitespace-pre-wrap font-mono min-h-[140px] py-1 leading-relaxed">
-                <span class="text-gray-500">[ Sistema en espera de parámetros de consulta... ]</span>
+            <div id="resultadoTactico" class="text-xs text-sky-100 whitespace-pre-wrap font-mono min-h-[140px] py-1 leading-relaxed">
+                <span class="text-gray-500">[ Sistema consciente OSINT CDPS en línea. Ingrese objetivos individuales o en lote... ]</span>
             </div>
 
             <!-- PAGINACIÓN -->
             <div id="paginacionContainer" class="hidden flex justify-between items-center mt-3 pt-2 border-t border-sky-950 text-xs">
-                <button onclick="cambiarPagina(-1)" id="btnAnterior" class="px-3 py-1 bg-black border border-sky-900 text-gray-300 rounded hover:bg-sky-950 transition">← Anterior</button>
+                <button onclick="cambiarPagina(-1)" id="btnAnterior" class="px-3.5 py-1.5 bg-black border border-sky-900 text-sky-300 rounded-lg hover:bg-sky-950 transition">← Anterior</button>
                 <span id="lblPagina" class="text-sky-400 font-semibold text-[11px]">Página 1 de 1</span>
-                <button onclick="cambiarPagina(1)" id="btnSiguiente" class="px-3 py-1 bg-black border border-sky-900 text-gray-300 rounded hover:bg-sky-950 transition">Siguiente →</button>
+                <button onclick="cambiarPagina(1)" id="btnSiguiente" class="px-3.5 py-1.5 bg-black border border-sky-900 text-sky-300 rounded-lg hover:bg-sky-950 transition">Siguiente →</button>
             </div>
         </div>
     </main>
@@ -163,11 +196,11 @@
     <main id="view-history" class="tab-view space-y-4">
         <div class="enterprise-panel p-4 rounded-xl">
             <div class="flex justify-between items-center mb-3 border-b border-sky-950 pb-2">
-                <h2 class="text-xs font-bold text-white uppercase tracking-wide">Historial de Expedientes</h2>
+                <h2 class="text-xs font-bold text-white uppercase tracking-wide">📁 Historial Neuronal</h2>
                 <button onclick="limpiarHistorial()" class="text-[10px] bg-red-950/60 border border-red-900 text-red-400 px-2.5 py-1 rounded hover:bg-red-900/50 transition">Limpiar</button>
             </div>
             <div id="listaHistorial" class="text-xs space-y-2 max-h-80 overflow-y-auto">
-                <p class="text-gray-500 text-center py-6">Sin consultas recientes registradas.</p>
+                <p class="text-gray-500 text-center py-6">Sin consultas recientes registradas en memoria.</p>
             </div>
         </div>
     </main>
@@ -175,23 +208,16 @@
     <!-- ================= VISTA 3: TIENDA VIP ================= -->
     <main id="view-store" class="tab-view space-y-4">
         <div class="enterprise-panel p-4 rounded-xl">
-            <h2 class="text-xs font-bold text-white uppercase tracking-wide mb-1">Membresía & Créditos OSINT</h2>
-            <p class="text-[11px] text-gray-400 mb-4">Amplía tu cuota de consultas en bases de datos masivas.</p>
+            <h2 class="text-xs font-bold text-white uppercase tracking-wide mb-1">💎 Membresía & Créditos OSINT CDPS</h2>
+            <p class="text-[11px] text-gray-400 mb-4">Desbloquea procesamiento masivo ilimitado.</p>
             
             <div class="space-y-2.5 text-xs">
-                <div class="p-3 bg-black/70 border border-sky-900/50 rounded-xl flex justify-between items-center">
+                <div class="p-3.5 bg-black/80 border border-sky-900/50 rounded-xl flex justify-between items-center hover:border-sky-400 transition">
                     <div>
                         <p class="font-bold text-sky-400">⚡ Paquete Mini (60 Créditos)</p>
                         <p class="text-[10px] text-gray-400">Incluye 10 bonus de cortesía</p>
                     </div>
-                    <button onclick="alert('Redirigiendo a pasarela segura...')" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-3 py-1.5 rounded-lg transition">$25.00</button>
-                </div>
-                <div class="p-3 bg-black/70 border border-sky-900/50 rounded-xl flex justify-between items-center">
-                    <div>
-                        <p class="font-bold text-sky-400">⚡ Paquete Starter (130 Créditos)</p>
-                        <p class="text-[10px] text-gray-400">Incluye 30 bonus de cortesía</p>
-                    </div>
-                    <button onclick="alert('Redirigiendo a pasarela segura...')" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-3 py-1.5 rounded-lg transition">$50.00</button>
+                    <button onclick="alert('Redirigiendo a pasarela segura...')" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 py-2 rounded-lg transition shadow-md shadow-sky-500/30">$25.00</button>
                 </div>
             </div>
         </div>
@@ -201,41 +227,30 @@
     <main id="view-account" class="tab-view space-y-4">
         <div class="enterprise-panel p-4 rounded-xl">
             <div class="flex items-center space-x-3.5 mb-4 border-b border-sky-950 pb-3.5">
-                <div class="w-11 h-11 rounded-xl bg-sky-950 border border-sky-800 flex items-center justify-center text-sky-400 font-bold text-base">
+                <div class="w-12 h-12 rounded-xl bg-sky-950 border border-sky-500 flex items-center justify-center text-sky-300 font-bold text-base shadow-inner">
                     C
                 </div>
                 <div>
                     <h3 class="text-xs font-bold text-white tracking-wide">CERVANDO N.</h3>
-                    <p class="text-[10px] text-sky-400">ID: 6482757502 • <span class="text-emerald-400 font-medium">Conectado</span></p>
+                    <p class="text-[10px] text-sky-400">ID: 6482757502 • <span class="text-emerald-400 font-bold">Enlace Activo</span></p>
                 </div>
             </div>
             
             <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
-                <div class="p-2.5 bg-black/70 border border-sky-900/50 rounded-lg">
-                    <span class="text-[10px] text-gray-400 block">Créditos Disponibles</span>
+                <div class="p-3 bg-black/80 border border-sky-900/60 rounded-xl">
+                    <span class="text-[10px] text-gray-400 block">Créditos</span>
                     <span class="text-sm font-bold text-yellow-400">3 Créditos</span>
                 </div>
-                <div class="p-2.5 bg-black/70 border border-sky-900/50 rounded-lg">
-                    <span class="text-[10px] text-gray-400 block">Nivel de Acceso</span>
-                    <span class="text-sm font-bold text-emerald-400">Autorizado</span>
-                </div>
-            </div>
-
-            <div class="p-3 bg-black/70 border border-sky-900/50 rounded-xl text-xs space-y-2 text-gray-300">
-                <div class="flex justify-between border-b border-sky-950 pb-1.5">
-                    <span class="text-gray-400">Rol Actual</span>
-                    <span class="font-semibold text-white">Usuario Free</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-400">Servidor Activo</span>
-                    <span class="font-semibold text-sky-400">Render Cloud Node</span>
+                <div class="p-3 bg-black/80 border border-sky-900/60 rounded-xl">
+                    <span class="text-[10px] text-gray-400 block">Acceso</span>
+                    <span class="text-sm font-bold text-emerald-400">Autorizado PRO</span>
                 </div>
             </div>
         </div>
     </main>
 
     <!-- BARRA DE NAVEGACIÓN INFERIOR FIJA -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-[#030712]/95 border-t border-sky-950 p-2 flex justify-around text-xs max-w-xl mx-auto backdrop-blur-md z-50">
+    <nav class="fixed bottom-0 left-0 right-0 bg-[#02040a]/95 border-t border-sky-950 p-2 flex justify-around text-xs max-w-xl mx-auto backdrop-blur-md z-50 shadow-2xl">
         <button onclick="cambiarVista('search', this)" class="nav-item active flex flex-col items-center gap-1 text-sky-400 font-semibold px-4 py-1 transition">
             <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             <span>Búsqueda</span>
@@ -260,6 +275,16 @@
         let resultadosGlobales = [];
         let paginaActual = 1;
         const porPagina = 2;
+
+        const field = document.getElementById('particleField');
+        for (let i = 0; i < 20; i++) {
+            let p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.animationDuration = (4 + Math.random() * 6) + 's';
+            p.style.animationDelay = (Math.random() * 5) + 's';
+            field.appendChild(p);
+        }
 
         setInterval(() => {
             const now = new Date();
@@ -286,7 +311,7 @@
             btn.classList.add('active');
 
             document.getElementById('lblCostoActivo').innerText = `Costo: ${costo} Créditos`;
-            document.getElementById('lblInputLabel').innerText = `Parámetro de Búsqueda (${nombre}):`;
+            document.getElementById('lblInputLabel').innerText = `Parámetro de Búsqueda (${nombre} - Soporta Multitarget x línea):`;
 
             if(herramienta === 'ocr' || herramienta === 'facial') {
                 document.getElementById('inputTextoContainer').classList.add('hidden');
@@ -302,30 +327,16 @@
             const paginacionDiv = document.getElementById('paginacionContainer');
             paginacionDiv.classList.add('hidden');
 
-            resultadoBox.innerHTML = `<span class="text-sky-400 animate-pulse">⚡ [ESTABLECIENDO ENLACE SEGURO CON SERVIDOR]...\n█▒▒▒▒▒▒▒▒▒ 15% - Validando credenciales de operador...</span>`;
+            resultadoBox.innerHTML = `<span class="text-sky-400 animate-pulse font-mono">⚡ [IA OSINT CDPS: ANALIZANDO NÚCLEO]...\n█▒▒▒▒▒▒▒▒▒ 25% - Conectando con 'ine.db'...</span>`;
             await new Promise(r => setTimeout(r, 400));
-            resultadoBox.innerHTML = `<span class="text-sky-400 animate-pulse">⚡ [EXTRAYENDO METADATOS Y CRUCE DE CELDAS]...\n██████▒▒▒▒ 65% - Procesando registros en base de datos...</span>`;
-            await new Promise(r => setTimeout(r, 500));
 
             try {
                 if (herramientaActual === 'ocr' || herramientaActual === 'facial') {
                     const fileInput = document.getElementById('fileInput');
                     if(fileInput.files.length === 0) {
-                        alert("Sube un archivo o fotografía válida antes de ejecutar.");
+                        alert("Sube un archivo válido.");
                         resultadoBox.innerHTML = '<span class="text-yellow-400">[!] Error: Ningún archivo seleccionado.</span>';
                         return;
                     }
                     const formData = new FormData();
-                    formData.append("file", fileInput.files[0]);
-                    const endpoint = herramientaActual === 'ocr' ? '/api/ocr' : '/api/facial';
-
-                    const res = await fetch(endpoint, { method: 'POST', body: formData });
-                    const data = await res.json();
-                    resultadosGlobales = [{detalles: data.detalles}];
-                    paginaActual = 1;
-                    renderizarResultados();
-                } else {
-                    const query = document.getElementById('searchInput').value;
-                    if(!query) {
-                        alert("Ingresa un objetivo de búsqueda válido.");
-                     
+                    formData.append("file", fileInput
