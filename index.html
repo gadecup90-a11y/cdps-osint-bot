@@ -2,273 +2,257 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>OSINTBOT - TACTICAL MATRIX v5.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSINT CDPS — Tactical Enterprise Suite</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
+        :root {
+            --bg-base: #030712;
+            --panel-bg: rgba(7, 13, 25, 0.90);
+            --border-color: rgba(56, 189, 248, 0.25);
+        }
         body { 
-            background: radial-gradient(circle at center, #130a24 0%, #070510 100%);
+            background: linear-gradient(rgba(3, 7, 18, 0.88), rgba(3, 7, 18, 0.95)), url('https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1200&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
             color: #e2e8f0; 
-            font-family: ui-monospace, monospace; 
-            overflow-x: hidden;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            -webkit-font-smoothing: antialiased;
         }
-        .panel-tactico { 
-            border: 1px solid rgba(168, 85, 247, 0.35); 
-            background: rgba(15, 10, 30, 0.90); 
+        .enterprise-panel { 
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(12px);
-            box-shadow: 0 4px 25px rgba(139, 92, 246, 0.2); 
-            transition: all 0.3s ease;
         }
-        .panel-tactico:hover {
-            border-color: rgba(168, 85, 247, 0.6);
-            box-shadow: 0 6px 30px rgba(168, 85, 247, 0.35);
+        .tool-btn {
+            background: rgba(10, 15, 28, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            transition: all 0.15s ease-in-out;
         }
-        .btn-grid { 
-            border: 1px solid rgba(168, 85, 247, 0.3); 
-            background: rgba(24, 18, 48, 0.85); 
-            color: #d8b4fe; 
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
-            position: relative;
-            overflow: hidden;
+        .tool-btn:hover {
+            border-color: #38bdf8;
+            background: rgba(14, 22, 40, 0.9);
         }
-        .btn-grid::after {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transition: 0.5s;
+        .tool-btn.active {
+            background: #0284c7;
+            border-color: #38bdf8;
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
         }
-        .btn-grid:hover::after {
-            left: 100%;
+        .nav-item.active {
+            color: #38bdf8;
         }
-        .btn-grid:hover, .btn-grid.active { 
-            background: #7c3aed; 
-            color: #ffffff; 
-            border-color: #c084fc;
-            box-shadow: 0 0 18px rgba(168, 85, 247, 0.6); 
-            transform: translateY(-2px);
+        .nav-item.active svg {
+            stroke: #38bdf8;
         }
-        /* Animación de pulso para el logo y estado */
-        @keyframes radarPulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(168, 85, 247, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
-        }
-        .logo-animado {
-            animation: radarPulse 3s infinite;
-        }
-        #sidebar {
-            transform: translateX(-100%);
-            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        #sidebar.open {
-            transform: translateX(0);
-        }
-        .tab-content {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .tab-view { display: none; }
+        .tab-view.active { display: block; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="p-4 max-w-xl mx-auto pb-12">
+<body class="p-4 max-w-xl mx-auto pb-28">
 
-    <!-- BARRA SUPERIOR CON LOGOTIPO ANIMADO Y MENÚ LATERAL -->
-    <div class="panel-tactico p-3.5 mb-4 rounded-2xl flex justify-between items-center border-t-2 border-purple-500">
-        <div class="flex items-center space-x-3">
-            <button onclick="toggleSidebar()" class="text-purple-400 hover:text-white p-1 transition transform active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-            </button>
-            <div class="flex items-center gap-2.5">
-                <!-- LOGOTIPO OFICIAL OSINT ANIMADO -->
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-900 border border-purple-400 flex items-center justify-center shadow-lg shadow-purple-900/60 logo-animado">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                </div>
-                <h1 class="text-sm font-extrabold tracking-wider text-white">OSINT<span class="text-purple-400 animate-pulse">BOT</span></h1>
+    <!-- HEADER CON EL LOGOTIPO OFICIAL OSINT CDPS -->
+    <header class="enterprise-panel p-4 mb-4 rounded-xl flex justify-between items-center border-t-2 border-sky-400">
+        <div class="flex items-center space-x-3.5">
+            <!-- LOGOTIPO MINIATURA OFICIAL CIRCULAR -->
+            <div class="w-11 h-11 rounded-full overflow-hidden border-2 border-sky-400 shadow-md shadow-sky-500/30 flex-shrink-0 bg-black">
+                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=200&auto=format&fit=crop" alt="OSINT CDPS Logo" class="w-full h-full object-cover">
             </div>
-        </div>
-        <div class="flex items-center space-x-2 bg-purple-950/70 px-3 py-1.5 rounded-xl border border-purple-800 text-[11px] shadow-inner">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping absolute"></span>
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 relative"></span>
-            <span class="text-emerald-300 font-semibold tracking-wide">ONLINE</span>
-        </div>
-    </div>
-
-    <!-- MENÚ LATERAL DESLIZANTE (SIDEBAR) -->
-    <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/80 z-40 hidden backdrop-blur-md transition-opacity"></div>
-    <div id="sidebar" class="fixed top-0 left-0 bottom-0 w-72 bg-[#0c081d] border-r border-purple-900 z-50 p-5 flex flex-col justify-between shadow-2xl">
-        <div>
-            <div class="flex justify-between items-center mb-6 border-b border-purple-900 pb-4">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-7 h-7 rounded-lg bg-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-md">O</div>
-                    <h2 class="text-xs font-bold text-purple-300 tracking-widest">NEXUS TACTICAL</h2>
-                </div>
-                <button onclick="toggleSidebar()" class="text-gray-400 hover:text-white text-sm bg-purple-950 p-1.5 rounded-lg border border-purple-900">✕</button>
-            </div>
-            <nav class="space-y-2.5 text-xs">
-                <button onclick="toggleSidebar(); cambiarTab('busqueda')" class="w-full text-left p-3 rounded-xl bg-purple-950/60 text-purple-300 border border-purple-800 flex items-center gap-3 transition hover:bg-purple-900/50"><span>🏠</span> Inicio / Búsqueda</button>
-                <button onclick="toggleSidebar(); cambiarTab('historial')" class="w-full text-left p-3 rounded-xl text-gray-300 hover:bg-purple-950/40 border border-transparent hover:border-purple-900 flex items-center gap-3 transition"><span>📁</span> Historial de Consultas</button>
-                <button onclick="toggleSidebar(); cambiarTab('tienda')" class="w-full text-left p-3 rounded-xl text-gray-300 hover:bg-purple-950/40 border border-transparent hover:border-purple-900 flex items-center gap-3 transition"><span>💎</span> Tienda VIP & Créditos</button>
-                <button onclick="toggleSidebar(); cambiarTab('cuenta')" class="w-full text-left p-3 rounded-xl text-gray-300 hover:bg-purple-950/40 border border-transparent hover:border-purple-900 flex items-center gap-3 transition"><span>👤</span> Mi Cuenta / Rango</button>
-            </nav>
-        </div>
-        <div class="text-[10px] text-gray-500 border-t border-purple-950 pt-4 text-center">
-            OSINT CDPS Suite v5.0 • Active Secure Node
-        </div>
-    </div>
-
-    <!-- ================= PESTAÑA: BÚSQUEDA ================= -->
-    <div id="tab-busqueda" class="tab-content active">
-        <!-- INFO OPERADOR E ID -->
-        <div class="panel-tactico p-3.5 mb-3 rounded-2xl flex justify-between items-center text-xs">
             <div>
-                <p class="text-gray-400 text-[10px]">ID: <span class="text-purple-400 font-bold">6482757502</span></p>
-                <p class="text-white font-semibold flex items-center gap-1.5 mt-0.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> CONECTADO AL SERVIDOR</p>
-            </div>
-            <div class="text-right text-[10px] text-gray-400 font-mono">
-                <p id="relojHora" class="text-purple-300 font-bold">11:01</p>
-                <p>02 OCT 2026</p>
+                <h1 class="text-xs font-black tracking-wider text-white uppercase flex items-center gap-1.5">
+                    OSINT <span class="text-sky-400">CDPS</span> <span class="text-[9px] px-1.5 py-0.2 bg-sky-950 text-sky-300 rounded border border-sky-800">PRO</span>
+                </h1>
+                <p class="text-[10px] text-gray-400">OPERADOR: <span class="text-sky-300 font-semibold">CERVANDO</span></p>
             </div>
         </div>
-
-        <!-- TÍTULO DE MÓDULO CON LOGOTIPO -->
-        <div class="panel-tactico p-4 mb-3 rounded-2xl relative overflow-hidden">
-            <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-purple-600/10 rounded-full blur-xl pointer-events-none"></div>
-            <h2 class="text-sm font-black text-white tracking-wide flex items-center gap-2">
-                <span class="text-purple-400 animate-spin" style="animation-duration: 8s;">🌐</span> TACTICAL MATRIX OSINT CLOUD v5.0
-            </h2>
-            <p id="descModulo" class="text-[11px] text-purple-300 mt-1">Análisis E.164, carrier, zona y plan activo.</p>
+        <div class="text-right">
+            <div class="flex items-center justify-end space-x-1.5 text-[10px]">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-emerald-300 font-medium">NODO SEGURO</span>
+            </div>
+            <p id="liveClock" class="text-[10px] text-gray-400 font-mono mt-0.5">--:--:--</p>
         </div>
+    </header>
 
-        <!-- CUADRÍCULA DE HERRAMIENTAS (GRID INTERACTIVO ANIMADO) -->
-        <div class="grid grid-cols-2 gap-2 mb-3">
-            <button onclick="setHerramienta('ine', 'INE DB', 'Extracción y cruce de datos del Padrón Electoral de 24GB.', this)" class="btn-grid p-3 rounded-xl text-xs font-semibold flex items-center gap-2.5">
-                <span>📁</span> INE DB
-            </button>
-            <button onclick="setHerramienta('telefono', 'TELÉFONO', 'Análisis E.164, carrier, zona y plan activo.', this)" class="btn-grid active p-3 rounded-xl text-xs font-semibold flex items-center gap-2.5">
-                <span>📱</span> TELÉFONO
-            </button>
-            <button onclick="setHerramienta('geo', 'GEO IP', 'Rastreo de ubicación satelital y geolocalización IP en tiempo real.', this)" class="btn-grid p-3 rounded-xl text-xs font-semibold flex items-center gap-2.5">
-                <span>🌐</span> GEO IP
-            </button>
-            <button onclick="setHerramienta('osint', 'OSINT WEB', 'Búsqueda profunda en motores de fuentes abiertas y directorios.', this)" class="btn-grid p-3 rounded-xl text-xs font-semibold flex items-center gap-2.5">
-                <span>🔍</span> OSINT WEB
-            </button>
-            <button onclick="setHerramienta('redes', 'REDES', 'Cruce de huella digital en perfiles de redes sociales y foros.', this)" class="btn-grid p-3 rounded-xl text-xs font-semibold flex items-center gap-2.5">
-                <span>👤</span> REDES
-            </button>
-            <button onclick="setHerramienta('leaks', 'LEAKS DB', 'Consulta en bases de datos masivas de filtraciones y credenciales.', this)" class="btn-grid p-3 rounded-xl text-xs font-semibold flex items-center gap-2.5">
-                <span>🔓</span> LEAKS DB
-            </button>
-            <button onclick="setHerramienta('crypto', 'CRYPTO', 'Rastreo y análisis de transacciones en blockchain y wallets.', this)" class="btn-grid p-3 rounded-xl text-xs font-semibold flex items-center gap-2.5">
-                <span>🪙</span> CRYPTO
-            </button>
-            <button onclick="setHerramienta('ocr', 'OCR VISIÓN', 'Escaneo y extracción de texto en alta calidad de documentos y fotos.', this)" class="btn-grid p-3 rounded-xl text-xs font-semibold flex items-center gap-2.5">
-                <span>👁️</span> OCR VISIÓN
-            </button>
-            <button onclick="setHerramienta('covid', 'BASE COVID', 'Consulta de registros epidemiológicos y seguimientos de salud.', this)" class="btn-grid p-3 rounded-xl text-xs font-semibold flex items-center gap-2.5">
-                <span>🏥</span> BASE COVID
-            </button>
-            <button onclick="setHerramienta('financial', 'FINANCIERO', 'Inteligencia financiera y buró de crédito por nombre.', this)" class="btn-grid p-3 rounded-xl text-xs font-semibold flex items-center gap-2.5">
-                <span>💳</span> FINANCIERO
-            </button>
-            <button onclick="setHerramienta('facial', 'ROSTRO (IA)', 'Reconocimiento biométrico facial y cruce en galerías públicas.', this)" class="btn-grid p-3 rounded-xl text-xs font-semibold flex items-center gap-2.5 col-span-2 justify-center">
-                <span>👤</span> BÚSQUEDA POR ROSTRO (IA)
-            </button>
-        </div>
-
-        <!-- ENTRADA DE DATOS DINÁMICA -->
-        <div class="panel-tactico p-3.5 mb-3 rounded-2xl">
-            <div id="inputTextoContainer" class="flex gap-2">
-                <input type="text" id="searchInput" placeholder="+528180797772" class="w-full bg-black/70 border border-purple-900 rounded-xl p-3 text-xs text-purple-200 placeholder-gray-500 focus:outline-none focus:border-purple-400 transition">
-                <button onclick="ejecutarAnalisis()" class="bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-extrabold px-5 rounded-xl text-xs transition shadow-lg shadow-purple-900/60">EJECUTAR →</button>
+    <!-- ================= VISTA 1: BÚSQUEDA / INTELIGENCIA ================= -->
+    <main id="view-search" class="tab-view active space-y-4">
+        
+        <!-- SELECTOR DE HERRAMIENTAS (GRID TÁCTICO) -->
+        <div class="enterprise-panel p-4 rounded-xl">
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Módulos de Inteligencia</h2>
+                <span id="lblCostoActivo" class="text-[10px] text-sky-400 font-semibold">Costo: 6 Créditos</span>
             </div>
             
-            <div id="inputArchivoContainer" class="hidden">
-                <input type="file" id="fileInput" accept="image/*,.pdf" class="w-full text-xs text-gray-300 border border-purple-900 rounded-xl p-2.5 bg-black/70 mb-2.5 file:bg-purple-950 file:text-purple-300 file:border-0 file:rounded-lg file:text-xs file:py-1 file:px-3">
-                <button onclick="ejecutarAnalisis()" class="w-full bg-purple-600 hover:bg-purple-500 active:scale-95 text-white font-extrabold py-3 rounded-xl text-xs transition shadow-lg shadow-purple-900/60">EJECUTAR ANÁLISIS ARCHIVO →</button>
+            <div class="grid grid-cols-3 gap-2 text-xs">
+                <button onclick="setHerramienta('telefono', 'Telcel / Celda E.164', '6', this)" class="tool-btn active p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
+                    <span class="text-base">📱</span>
+                    <span class="truncate">Teléfono</span>
+                </button>
+                <button onclick="setHerramienta('ine', 'Padrón Electoral 24GB', '6', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
+                    <span class="text-base">📁</span>
+                    <span class="truncate">INE DB</span>
+                </button>
+                <button onclick="setHerramienta('osint', 'OSINT Fuentes Abiertas', '4', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
+                    <span class="text-base">🔍</span>
+                    <span class="truncate">OSINT Web</span>
+                </button>
+                <button onclick="setHerramienta('covid', 'Registro Epidemiológico COVID', '5', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
+                    <span class="text-base">🏥</span>
+                    <span class="truncate">Base COVID</span>
+                </button>
+                <button onclick="setHerramienta('financial', 'Buró & Historial Financiero', '8', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
+                    <span class="text-base">💳</span>
+                    <span class="truncate">Financiero</span>
+                </button>
+                <button onclick="setHerramienta('ocr', 'OCR Visión HD', '3', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
+                    <span class="text-base">👁️️</span>
+                    <span class="truncate">OCR Visión</span>
+                </button>
+                <button onclick="setHerramienta('facial', 'Biometría Facial OSINT', '10', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1 col-span-3 items-center justify-center flex-row">
+                    <span class="text-base">👤</span>
+                    <span>Reconocimiento Facial por Rostro (IA)</span>
+                </button>
             </div>
         </div>
 
-        <!-- CAJA DE DESCRIPCIÓN DINÁMICA -->
-        <div class="panel-tactico p-3.5 mb-3 rounded-2xl text-[11px] text-gray-300 border-l-4 border-purple-500 shadow-sm">
-            <span id="txtAyudaHerramienta">¿Qué hace? Desglosa metadatos de telefonía global E.164. Entrega: Operador, país, tipo de línea y zona horaria.</span>
+        <!-- INPUT DE BÚSQUEDA -->
+        <div class="enterprise-panel p-4 rounded-xl">
+            <div id="inputTextoContainer">
+                <label id="lblInputLabel" class="block text-[10px] text-gray-400 mb-1.5 uppercase tracking-wider">Parámetro de Búsqueda (Teléfono / CURP / Nombre):</label>
+                <div class="flex gap-2">
+                    <input type="text" id="searchInput" placeholder="Ej. +528180797772 o Juan Pérez..." class="w-full bg-black/70 border border-sky-900/50 rounded-lg p-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-sky-400 transition">
+                    <button onclick="ejecutarAnalisis()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 rounded-lg text-xs transition shadow-md whitespace-nowrap">
+                        Ejecutar →
+                    </button>
+                </div>
+            </div>
+
+            <div id="inputArchivoContainer" class="hidden">
+                <label class="block text-[10px] text-gray-400 mb-1.5 uppercase tracking-wider">Cargar Archivo / Fotografía Objetivo:</label>
+                <input type="file" id="fileInput" accept="image/*,.pdf" class="w-full text-xs text-gray-300 border border-sky-900/50 rounded-lg p-2 bg-black/70 file:bg-sky-950 file:text-sky-300 file:border-0 file:rounded file:text-xs file:mr-3">
+                <button onclick="ejecutarAnalisis()" class="w-full mt-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-md">
+                    Procesar Archivo →
+                </button>
+            </div>
         </div>
 
         <!-- RESULTADOS TÁCTICOS CON PAGINACIÓN -->
-        <div class="panel-tactico p-4 rounded-2xl">
-            <div class="flex justify-between items-center mb-3 border-b border-purple-950 pb-2">
-                <h3 class="text-xs font-bold text-white tracking-wide flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span> Resultado Táctico
-                </h3>
-                <span id="contadorResultados" class="text-[10px] text-purple-400 font-semibold bg-purple-950/60 px-2.5 py-0.5 rounded-full border border-purple-900">0 registros</span>
+        <div class="enterprise-panel p-4 rounded-xl">
+            <div class="flex justify-between items-center mb-2.5 border-b border-sky-950 pb-2">
+                <h3 class="text-xs font-bold text-gray-200 uppercase tracking-wide">Informe Pericial / Resultados</h3>
+                <span id="contadorResultados" class="text-[10px] text-sky-400 font-mono font-semibold">0 registros</span>
             </div>
             
-            <div id="resultadoTactico" class="text-xs text-purple-200 whitespace-pre-wrap font-mono min-h-[140px] py-1">
-                <span class="text-gray-500">[ Selecciona una herramienta e ingresa parámetros para desplegar el informe pericial... ]</span>
+            <div id="resultadoTactico" class="text-xs text-gray-200 whitespace-pre-wrap font-mono min-h-[140px] py-1 leading-relaxed">
+                <span class="text-gray-500">[ Sistema en espera de parámetros de consulta... ]</span>
             </div>
 
-            <!-- CONTROLES DE PAGINACIÓN -->
-            <div id="paginacionContainer" class="hidden flex justify-between items-center mt-3 pt-3 border-t border-purple-950 text-xs">
-                <button onclick="cambiarPagina(-1)" id="btnAnterior" class="px-3.5 py-1.5 bg-black border border-purple-900 text-purple-300 rounded-xl hover:bg-purple-950 transition">← Anterior</button>
-                <span id="lblPagina" class="text-purple-400 font-semibold text-[11px]">Página 1 de 1</span>
-                <button onclick="cambiarPagina(1)" id="btnSiguiente" class="px-3.5 py-1.5 bg-black border border-purple-900 text-purple-300 rounded-xl hover:bg-purple-950 transition">Siguiente →</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ================= PESTAÑA: HISTORIAL ================= -->
-    <div id="tab-historial" class="tab-content hidden">
-        <div class="panel-tactico p-4 rounded-2xl mb-4">
-            <h2 class="text-xs font-bold text-white mb-2">📁 Historial de Consultas</h2>
-            <p class="text-[11px] text-gray-400 mb-3">Reabre expedientes y administra el guardado de tus búsquedas.</p>
-            <div id="listaHistorial" class="text-xs space-y-2 max-h-60 overflow-y-auto">
-                <p class="text-gray-500 text-center py-4">Sin consultas recientes registradas.</p>
+            <!-- PAGINACIÓN -->
+            <div id="paginacionContainer" class="hidden flex justify-between items-center mt-3 pt-2 border-t border-sky-950 text-xs">
+                <button onclick="cambiarPagina(-1)" id="btnAnterior" class="px-3 py-1 bg-black border border-sky-900 text-gray-300 rounded hover:bg-sky-950 transition">← Anterior</button>
+                <span id="lblPagina" class="text-sky-400 font-semibold text-[11px]">Página 1 de 1</span>
+                <button onclick="cambiarPagina(1)" id="btnSiguiente" class="px-3 py-1 bg-black border border-sky-900 text-gray-300 rounded hover:bg-sky-950 transition">Siguiente →</button>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- ================= PESTAÑA: TIENDA VIP ================= -->
-    <div id="tab-tienda" class="tab-content hidden">
-        <div class="panel-tactico p-4 rounded-2xl mb-4">
-            <h2 class="text-xs font-bold text-white mb-1">💎 Tienda VIP y Recargas</h2>
-            <p class="text-[11px] text-gray-400 mb-4">Adquiere créditos y membresías ilimitadas.</p>
+    <!-- ================= VISTA 2: HISTORIAL ================= -->
+    <main id="view-history" class="tab-view space-y-4">
+        <div class="enterprise-panel p-4 rounded-xl">
+            <div class="flex justify-between items-center mb-3 border-b border-sky-950 pb-2">
+                <h2 class="text-xs font-bold text-white uppercase tracking-wide">Historial de Expedientes</h2>
+                <button onclick="limpiarHistorial()" class="text-[10px] bg-red-950/60 border border-red-900 text-red-400 px-2.5 py-1 rounded hover:bg-red-900/50 transition">Limpiar</button>
+            </div>
+            <div id="listaHistorial" class="text-xs space-y-2 max-h-80 overflow-y-auto">
+                <p class="text-gray-500 text-center py-6">Sin consultas recientes registradas.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- ================= VISTA 3: TIENDA VIP ================= -->
+    <main id="view-store" class="tab-view space-y-4">
+        <div class="enterprise-panel p-4 rounded-xl">
+            <h2 class="text-xs font-bold text-white uppercase tracking-wide mb-1">Membresía & Créditos OSINT</h2>
+            <p class="text-[11px] text-gray-400 mb-4">Amplía tu cuota de consultas en bases de datos masivas.</p>
+            
             <div class="space-y-2.5 text-xs">
-                <div class="p-3.5 bg-black/70 border border-purple-900 rounded-2xl flex justify-between items-center hover:border-purple-500 transition">
+                <div class="p-3 bg-black/70 border border-sky-900/50 rounded-xl flex justify-between items-center">
                     <div>
-                        <p class="font-bold text-purple-400">⚡ Mini (50 + 10 Bonus)</p>
-                        <p class="text-[10px] text-gray-400">60 Créditos OSINT</p>
+                        <p class="font-bold text-sky-400">⚡ Paquete Mini (60 Créditos)</p>
+                        <p class="text-[10px] text-gray-400">Incluye 10 bonus de cortesía</p>
                     </div>
-                    <button onclick="alert('Redirigiendo a pasarela...')" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2 rounded-xl transition shadow-md shadow-purple-900/50">$25.00</button>
+                    <button onclick="alert('Redirigiendo a pasarela segura...')" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-3 py-1.5 rounded-lg transition">$25.00</button>
+                </div>
+                <div class="p-3 bg-black/70 border border-sky-900/50 rounded-xl flex justify-between items-center">
+                    <div>
+                        <p class="font-bold text-sky-400">⚡ Paquete Starter (130 Créditos)</p>
+                        <p class="text-[10px] text-gray-400">Incluye 30 bonus de cortesía</p>
+                    </div>
+                    <button onclick="alert('Redirigiendo a pasarela segura...')" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-3 py-1.5 rounded-lg transition">$50.00</button>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- ================= PESTAÑA: MI CUENTA ================= -->
-    <div id="tab-cuenta" class="tab-content hidden">
-        <div class="panel-tactico p-4 rounded-2xl mb-4">
-            <div class="flex items-center space-x-3.5 mb-4 border-b border-purple-900 pb-3.5">
-                <div class="w-11 h-11 rounded-2xl bg-purple-950 border border-purple-500 flex items-center justify-center text-purple-300 font-bold text-sm shadow-inner">C</div>
+    <!-- ================= VISTA 4: CUENTA ================= -->
+    <main id="view-account" class="tab-view space-y-4">
+        <div class="enterprise-panel p-4 rounded-xl">
+            <div class="flex items-center space-x-3.5 mb-4 border-b border-sky-950 pb-3.5">
+                <div class="w-11 h-11 rounded-xl bg-sky-950 border border-sky-800 flex items-center justify-center text-sky-400 font-bold text-base">
+                    C
+                </div>
                 <div>
-                    <h3 class="text-xs font-bold text-white tracking-wide">CERVANDO</h3>
-                    <p class="text-[10px] text-purple-400 mt-0.5">ID: 6482757502 • <span class="text-emerald-400 font-semibold">En Línea</span></p>
+                    <h3 class="text-xs font-bold text-white tracking-wide">CERVANDO N.</h3>
+                    <p class="text-[10px] text-sky-400">ID: 6482757502 • <span class="text-emerald-400 font-medium">Conectado</span></p>
                 </div>
             </div>
-            <div class="p-3 bg-black/70 border border-purple-900 rounded-xl text-xs space-y-1.5">
-                <p class="text-gray-400 flex justify-between">Rol: <span class="text-white font-bold">Usuario Free</span></p>
-                <p class="text-gray-400 flex justify-between">Nivel de Acceso: <span class="text-emerald-400 font-bold">Autorizado</span></p>
+            
+            <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
+                <div class="p-2.5 bg-black/70 border border-sky-900/50 rounded-lg">
+                    <span class="text-[10px] text-gray-400 block">Créditos Disponibles</span>
+                    <span class="text-sm font-bold text-yellow-400">3 Créditos</span>
+                </div>
+                <div class="p-2.5 bg-black/70 border border-sky-900/50 rounded-lg">
+                    <span class="text-[10px] text-gray-400 block">Nivel de Acceso</span>
+                    <span class="text-sm font-bold text-emerald-400">Autorizado</span>
+                </div>
+            </div>
+
+            <div class="p-3 bg-black/70 border border-sky-900/50 rounded-xl text-xs space-y-2 text-gray-300">
+                <div class="flex justify-between border-b border-sky-950 pb-1.5">
+                    <span class="text-gray-400">Rol Actual</span>
+                    <span class="font-semibold text-white">Usuario Free</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Servidor Activo</span>
+                    <span class="font-semibold text-sky-400">Render Cloud Node</span>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- BARRA DE NAVEGACIÓN INFERIOR FIJA -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-[#030712]/95 border-t border-sky-950 p-2 flex justify-around text-xs max-w-xl mx-auto backdrop-blur-md z-50">
+        <button onclick="cambiarVista('search', this)" class="nav-item active flex flex-col items-center gap-1 text-sky-400 font-semibold px-4 py-1 transition">
+            <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <span>Búsqueda</span>
+        </button>
+        <button onclick="cambiarVista('history', this)" class="nav-item flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 px-4 py-1 transition">
+            <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Historial</span>
+        </button>
+        <button onclick="cambiarVista('store', this)" class="nav-item flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 px-4 py-1 transition">
+            <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Tienda VIP</span>
+        </button>
+        <button onclick="cambiarVista('account', this)" class="nav-item flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 px-4 py-1 transition">
+            <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            <span>Mi Cuenta</span>
+        </button>
+    </nav>
 
     <script>
         let herramientaActual = 'telefono';
@@ -277,31 +261,34 @@
         let paginaActual = 1;
         const porPagina = 2;
 
-        // Actualizar reloj dinámico
         setInterval(() => {
             const now = new Date();
-            document.getElementById('relojHora').innerText = now.toTimeString().split(' ')[0].substring(0,5);
+            document.getElementById('liveClock').innerText = now.toTimeString().split(' ')[0];
         }, 1000);
 
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-            document.getElementById('sidebarOverlay').classList.toggle('hidden');
+        function cambiarVista(vistaId, btn) {
+            document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+            document.getElementById(`view-${vistaId}`).classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(i => {
+                i.classList.remove('active', 'text-sky-400');
+                i.classList.add('text-gray-400');
+            });
+            btn.classList.add('active', 'text-sky-400');
+            btn.classList.remove('text-gray-400');
+
+            if(vistaId === 'history') cargarHistorialUI();
         }
 
-        function cambiarTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            if(tabId === 'historial') cargarHistorialUI();
-        }
-
-        function setHerramienta(herramienta, nombre, descripcion, btn) {
+        function setHerramienta(herramienta, nombre, costo, btn) {
             herramientaActual = herramienta;
-            document.querySelectorAll('.btn-grid').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            document.getElementById('txtAyudaHerramienta').innerText = `¿Qué hace? ${descripcion}`;
+            document.getElementById('lblCostoActivo').innerText = `Costo: ${costo} Créditos`;
+            document.getElementById('lblInputLabel').innerText = `Parámetro de Búsqueda (${nombre}):`;
 
-            if(herramienta === 'ocr' || herramienta === 'facial' || herramienta === 'leaks') {
+            if(herramienta === 'ocr' || herramienta === 'facial') {
                 document.getElementById('inputTextoContainer').classList.add('hidden');
                 document.getElementById('inputArchivoContainer').classList.remove('hidden');
             } else {
@@ -313,4 +300,32 @@
         async function ejecutarAnalisis() {
             const resultadoBox = document.getElementById('resultadoTactico');
             const paginacionDiv = document.getElementById('paginacionContainer');
-            paginacionDiv.classList.add
+            paginacionDiv.classList.add('hidden');
+
+            resultadoBox.innerHTML = `<span class="text-sky-400 animate-pulse">⚡ [ESTABLECIENDO ENLACE SEGURO CON SERVIDOR]...\n█▒▒▒▒▒▒▒▒▒ 15% - Validando credenciales de operador...</span>`;
+            await new Promise(r => setTimeout(r, 400));
+            resultadoBox.innerHTML = `<span class="text-sky-400 animate-pulse">⚡ [EXTRAYENDO METADATOS Y CRUCE DE CELDAS]...\n██████▒▒▒▒ 65% - Procesando registros en base de datos...</span>`;
+            await new Promise(r => setTimeout(r, 500));
+
+            try {
+                if (herramientaActual === 'ocr' || herramientaActual === 'facial') {
+                    const fileInput = document.getElementById('fileInput');
+                    if(fileInput.files.length === 0) {
+                        alert("Sube un archivo o fotografía válida antes de ejecutar.");
+                        resultadoBox.innerHTML = '<span class="text-yellow-400">[!] Error: Ningún archivo seleccionado.</span>';
+                        return;
+                    }
+                    const formData = new FormData();
+                    formData.append("file", fileInput.files[0]);
+                    const endpoint = herramientaActual === 'ocr' ? '/api/ocr' : '/api/facial';
+
+                    const res = await fetch(endpoint, { method: 'POST', body: formData });
+                    const data = await res.json();
+                    resultadosGlobales = [{detalles: data.detalles}];
+                    paginaActual = 1;
+                    renderizarResultados();
+                } else {
+                    const query = document.getElementById('searchInput').value;
+                    if(!query) {
+                        alert("Ingresa un objetivo de búsqueda válido.");
+                     
