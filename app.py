@@ -16,8 +16,8 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 # 1. CONFIGURACIÓN DE FASTAPI & TELEGRAM BOT
 # ==========================================
 TOKEN = "8375866730:AAFQWVJjYwEkriVBK9AjkVaMwvo7ysc0oKE"
-# Reemplaza con tu URL pública real de Render (ej: https://tu-app.onrender.com)
-WEB_APP_URL = https://tu-proyecto.onrender.com
+WEB_APP_URL = "https://cdps-osint-bot.onrender.com"
+
 app = FastAPI(title="CDPS OSINT Tactical Suite", version="5.0")
 
 app.add_middleware(
@@ -28,7 +28,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Inicializar la aplicación del bot de Telegram para webhooks
 telegram_app = Application.builder().token(TOKEN).concurrent_updates(True).build()
 
 class QueryRequest(BaseModel):
@@ -48,7 +47,6 @@ def api_buscar(data: QueryRequest):
         raise HTTPException(status_code=400, detail="Parámetro de búsqueda vacío.")
 
     try:
-        # ---- INE DB ----
         if modo == 'ine':
             if not os.path.exists(RUTA_DB):
                 resultados.append({
@@ -85,7 +83,6 @@ def api_buscar(data: QueryRequest):
                     if len(resultados) >= 6: break
                 conn.close()
 
-        # ---- TELÉFONO & PLAN ----
         elif modo == 'telefono':
             try:
                 parsed = phonenumbers.parse(query, None)
@@ -107,7 +104,6 @@ def api_buscar(data: QueryRequest):
             except Exception:
                 resultados.append({"titulo": "⚠️ ERROR DE PARSEO", "detalles": "Formato inválido. Use código de país (ej. +52...).", "extra": ""})
 
-        # ---- GEO IP ----
         elif modo == 'geo':
             resp = requests.get(f"http://ip-api.com/json/{query}", timeout=5).json()
             if resp.get("status") == "success":
@@ -119,7 +115,6 @@ def api_buscar(data: QueryRequest):
             else:
                 resultados.append({"titulo": "⚠️ ERROR DE RASTREO IP", "detalles": "Host protegido o inaccesible.", "extra": ""})
 
-        # ---- OSINT WEB ----
         elif modo == 'osint':
             with DDGS() as ddgs:
                 for r in ddgs.text(query, max_results=6):
@@ -129,7 +124,6 @@ def api_buscar(data: QueryRequest):
                         "extra": r.get('body')
                     })
 
-        # ---- REDES SOCIALES ----
         elif modo == 'social':
             resultados.append({
                 "titulo": f"👤 HUELLA DIGITAL: @{query}",
@@ -144,7 +138,6 @@ def api_buscar(data: QueryRequest):
                         "extra": r.get('body')
                     })
 
-        # ---- LEAKS DB ----
         elif modo == 'leaks':
             resultados.append({
                 "titulo": f"🔐 ANÁLISIS DE BRECHAS: {query}",
@@ -152,7 +145,6 @@ def api_buscar(data: QueryRequest):
                 "extra": "[!] Coincidencia detectada en bases de datos de seguridad históricas."
             })
 
-        # ---- CRYPTO ----
         elif modo == 'crypto':
             resultados.append({
                 "titulo": f"₿ WALLET TARGET: {query}",
@@ -165,9 +157,6 @@ def api_buscar(data: QueryRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# ==========================================
-# 2. MINI APP INTERACTIVA (DISEÑO TÁCTICO AMBER)
-# ==========================================
 MINI_APP_HTML = """<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -211,7 +200,6 @@ button.exec-btn { background: var(--accent); color: #000; border: none; padding:
 <h3 style="margin-top: 0; font-size: 13px; color: var(--accent);">⚡ TACTICAL MATRIX OSINT v5.0</h3>
 <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;" id="descModo">Selecciona un módulo táctico de consulta abajo:</p>
 
-<!-- Menú en Celdas / Botones -->
 <div class="grid-menu">
 <div class="cell-btn active" onclick="cambiarModo('ine', this, 'Base de datos local cifrada (INE).', 'Nombre o CURP...')">📁 INE DB</div>
 <div class="cell-btn" onclick="cambiarModo('telefono', this, 'Análisis de metadatos, carrier y plan E.164.', '+52...')">📱 TELÉFONO</div>
@@ -287,10 +275,6 @@ async function ejecutarBusqueda() {
 def serve_mini_app():
     return MINI_APP_HTML
 
-
-# ==========================================
-# 3. CONFIGURACIÓN DEL BOT CON WEBHOOK (SOLUCIÓN DEFINITIVA)
-# ==========================================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     keyboard = [
@@ -318,7 +302,6 @@ telegram_app.add_handler(CommandHandler("menu", menu))
 @app.on_event("startup")
 async def startup_event():
     await telegram_app.initialize()
-    # Configurar webhook automático en Telegram apuntando a tu app en Render
     webhook_url = f"{WEB_APP_URL}/webhook"
     await telegram_app.bot.set_webhook(url=webhook_url)
     print(f"[+] Webhook de Telegram configurado exitosamente en: {webhook_url}")
@@ -329,4 +312,4 @@ async def telegram_webhook(req: Request):
     update = Update.de_json(data, telegram_app.bot)
     await telegram_app.process_update(update)
     return {"status": "ok"}
-                
+                                            
