@@ -17,8 +17,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 # ==========================================
 TOKEN = "8375866730:AAFQWVJjYwEkriVBK9AjkVaMwvo7ysc0oKE"
 # Reemplaza con tu URL pública real de Render (ej: https://tu-app.onrender.com)
-WEB_APP_URL = os.getenv("WEB_APP_URL", "https://tu-proyecto.onrender.com")
-
+WEB_APP_URL = https://tu-proyecto.onrender.com
 app = FastAPI(title="CDPS OSINT Tactical Suite", version="5.0")
 
 app.add_middleware(
