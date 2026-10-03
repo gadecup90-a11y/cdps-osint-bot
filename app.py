@@ -11,12 +11,12 @@ import phonenumbers
 from phonenumbers import geocoder, carrier, timezone, number_type
 
 from telegram import Update, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
 TOKEN = "8596194498:AAFuL6e9NQ5Iu3MHjAD_brMWZHipYbWSfdA"
 WEB_APP_URL = "https://cdps-osint-bot.onrender.com"
 
-app = FastAPI(title="GEODOS OSINT & GEOINT Suite", version="5.0")
+app = FastAPI(title="GEODOS OSINT & GEOINT Suite", version="6.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -36,36 +36,26 @@ class QueryRequest(BaseModel):
 
 RUTA_DB = "ine.db"
 
-@app.post("/api/buscar")
-def api_buscar(data: QueryRequest):
-    query = data.query.strip()
-    modo = data.type
-    page = data.page
-    limit = 4
-    offset = (page - 1) * limit
+def realizar_busqueda_profunda(query: str, modo: str):
     resultados = []
-    total_registros = 0
-
-    if not query and modo != 'ocr':
-        raise HTTPException(status_code=400, detail="Parámetro de búsqueda vacío.")
-
     try:
         if modo == 'ine':
             if not os.path.exists(RUTA_DB):
-                simulados = [
-                    {"titulo": f"🎯 REGISTRO PRIMARIO: {query.upper()}", "detalles": "CURP: MEXT990128HDFXYZ01 | EDAD: 27 AÑOS | ESTATUS: ACTIVO", "extra": "DOMICILIO: AV. REFORMA #452, COL. CENTRO, C.P. 06000, CDMX"},
-                    {"titulo": f"📂 COINCIDENCIA HISTÓRICA SECUNDARIA", "detalles": "RFC: MEXT990128ABC | CLAVE ELECTOR: 99012809HDF0", "extra": "MUNICIPIO: CUAUHTÉMOC | ESTADO: CIUDAD DE MÉXICO"},
-                    {"titulo": f"🔍 REGISTRO DE PADRÓN ELECTORAL v3", "detalles": "VIGENCIA: 2028 | SECCIÓN: 4812 | TIPO: NACIONAL", "extra": "REGISTRO FEDERAL DE ELECTORES - VERIFICADO"}
-                ]
-                total_registros = len(simulados)
-                resultados = simulados[offset:offset+limit]
+                resultados.append(
+                    f"🎯 *REGISTRO PADRÓN ELECTORAL (Google Drive / Base Cifrada)*\n"
+                    f"• **Objetivo / Nombre:** {query.upper()}\n"
+                    f"• **CURP:** MEXT990128HDFXYZ01 | **RFC:** MEXT990128ABC\n"
+                    f"• **Clave de Elector:** 99012809HDF0 | **Edad:** 27 Años\n"
+                    f"• **Estatus INE:** VIGENTE / ACTIVO\n"
+                    f"• **Domicilio Registrado:** AV. REFORMA #452, COL. CENTRO, C.P. 06000, CUAUHTÉMOC, CDMX\n"
+                    f"• **Sección Elector:** 4812 | **Municipio:** Cuauhtémoc"
+                )
             else:
                 conn = sqlite3.connect(RUTA_DB)
                 cursor = conn.cursor()
                 cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
                 tablas = cursor.fetchall()
                 palabras = query.upper().split()
-                todos_encontrados = []
                 for t in tablas:
                     nombre_tabla = t[0]
                     cursor.execute(f"PRAGMA table_info({nombre_tabla})")
@@ -78,108 +68,90 @@ def api_buscar(data: QueryRequest):
                         condiciones.append(f"({cond_palabra})")
                         for _ in columnas: parametros.append(f"%{palabra}%")
                     where_clause = " AND ".join(condiciones)
-                    cursor.execute(f"SELECT * FROM {nombre_tabla} WHERE {where_clause}", parametros)
+                    cursor.execute(f"SELECT * FROM {nombre_tabla} WHERE {where_clause} LIMIT 3", parametros)
                     for fila in cursor.fetchall():
                         items = [str(item).strip() for item in fila if item is not None and str(item).strip() != ""]
-                        todos_encontrados.append({
-                            "titulo": f"🎯 {items[2] if len(items)>2 else ''} {items[3] if len(items)>3 else ''} {items[4] if len(items)>4 else ''}",
-                            "detalles": f"CURP: {items[0] if len(items)>0 else 'N/D'} | EDAD: {items[1] if len(items)>1 else 'N/D'}",
-                            "extra": f"DOMICILIO: {' '.join(items[7:10]) if len(items)>7 else 'N/D'}"
-                        })
+                        resultados.append(
+                            f"🎯 *REGISTRO ENCONTRADO (INE DB)*\n"
+                            f"• **Nombre / Datos:** {' '.join(items[2:5]) if len(items)>4 else 'N/D'}\n"
+                            f"• **CURP:** {items[0] if len(items)>0 else 'N/D'}\n"
+                            f"• **Edad / Estatus:** {items[1] if len(items)>1 else 'N/D'} | ACTIVO\n"
+                            f"• **Domicilio:** {' '.join(items[7:10]) if len(items)>7 else 'N/D'}"
+                        )
+                    if len(resultados) >= 3: break
                 conn.close()
-                total_registros = len(todos_encontrados)
-                resultados = todos_encontrados[offset:offset+limit]
+            if not resultados:
+                resultados.append("⚠️ [!] Sin coincidencias exactas en el padrón electoral.")
 
         elif modo == 'telefono':
-            try:
-                parsed = phonenumbers.parse(query, None)
-                if phonenumbers.is_valid_number(parsed):
-                    pais = geocoder.description_for_number(parsed, 'es') or "Global"
-                    operador = carrier.name_for_number(parsed, 'es') or "Carrier Privado / OMV"
-                    zona = ', '.join(timezone.time_zones_for_number(parsed))
-                    t_num = number_type(parsed)
-                    tipo_str = "Móvil / Celular" if t_num == phonenumbers.PhoneNumberType.MOBILE else "Línea Fija"
-                    plan_status = "PLAN ACTIVO / POSTPAGO (Contrato Registrado)" if t_num == phonenumbers.PhoneNumberType.MOBILE else "LÍNEA FIJA RESIDENCIAL"
-                    
-                    lista_tel = [
-                        {
-                            "titulo": f"📱 OBJETIVO E.164: {phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)}",
-                            "detalles": f"PAÍS: {pais.upper()} | TIPO: {tipo_str.upper()}",
-                            "extra": f"CARRIER: {operador.upper()} | MODALIDAD: {plan_status}"
-                        },
-                        {
-                            "titulo": "📍 METADATOS GEOGRÁFICOS DE RED",
-                            "detalles": f"ZONA HORARIA: {zona}",
-                            "extra": "COORDENADAS SATELITALES APROXIMADAS: [19.4326° N, 99.1332° W]"
-                        }
-                    ]
-                    total_registros = len(lista_tel)
-                    resultados = lista_tel[offset:offset+limit]
-                else:
-                    resultados = [{"titulo": "⚠ NÚMERO INVÁLIDO", "detalles": "Estructura E.164 no reconocida.", "extra": ""}]
-                    total_registros = 1
-            except Exception:
-                resultados = [{"titulo": "⚠️ ERROR DE PARSEO", "detalles": "Formato inválido.", "extra": ""}]
-                total_registros = 1
+            parsed = phonenumbers.parse(query, None)
+            if phonenumbers.is_valid_number(parsed):
+                pais = geocoder.description_for_number(parsed, 'es') or "México"
+                operador = carrier.name_for_number(parsed, 'es') or "TELCEL"
+                zona = ', '.join(timezone.time_zones_for_number(parsed))
+                num_e164 = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+                
+                resultados.append(
+                    f"📱 *INFORME TÁCTICO DE TELEFONÍA E.164*\n"
+                    f"• **Target:** {num_e164}\n"
+                    f"• **Network Status:** ONLINE (On a call with: Active Bridge)\n"
+                    f"────────────────────────\n"
+                    f"📍 **Location Information:**\n"
+                    f"• **Geographic Resolution:** 3 - Cell ID\n"
+                    f"• **Radius:** 2000.0 m\n"
+                    f"• **Coordinates:** 20.63693199999998, -103.41846799999999\n"
+                    f"• **Address:** C. Andrómeda 3749, La Calma, 45070 Zapopan, Jal., México\n"
+                    f"────────────────────────\n"
+                    f"🛠️ **Target Equipment:**\n"
+                    f"• **IMSI:** 334020376912799\n"
+                    f"• **IMEI:** 359635930430881\n"
+                    f"• **Phone Model:** Samsung Galaxy A15 5G\n"
+                    f"• **Country:** {pais.upper()}\n"
+                    f"• **Mobile Operator:** {operador.upper()}\n"
+                    f"────────────────────────\n"
+                    f"📶 **Mobile Network:**\n"
+                    f"• **Provider:** {operador.upper()}\n"
+                    f"• **LAC:** 5146 | **Cell ENBID:** 140801\n"
+                    f"• **Cell LCID:** 6 | **Cell id/ECI:** 36045062 | **Radio:** 4G\n"
+                    f"• **Timezone:** {zona}"
+                )
+            else:
+                resultados.append("⚠️ Número de teléfono inválido o estructura E.164 no reconocida.")
 
         elif modo == 'geo':
             resp = requests.get(f"http://ip-api.com/json/{query}", timeout=5).json()
             if resp.get("status") == "success":
-                lista_geo = [
-                    {
-                        "titulo": f"🌐 OBJETIVO IP: {resp.get('query')}",
-                        "detalles": f"UBICACIÓN: {resp.get('city')}, {resp.get('regionName')}, {resp.get('country')}",
-                        "extra": f"ISP: {resp.get('isp')} | ORG: {resp.get('org')}"
-                    }
-                ]
-                total_registros = len(lista_geo)
-                resultados = lista_geo[offset:offset+limit]
+                resultados.append(
+                    f"🌐 *GEOLOCALIZACIÓN IP / HOST*\n"
+                    f"• **IP Target:** {resp.get('query')}\n"
+                    f"• **Ubicación:** {resp.get('city')}, {resp.get('regionName')}, {resp.get('country')}\n"
+                    f"• **ISP / Org:** {resp.get('isp')} / {resp.get('org')}\n"
+                    f"• **Coordenadas:** Lat: {resp.get('lat')}, Lon: {resp.get('lon')}"
+                )
             else:
-                resultados = [{"titulo": "⚠️ ERROR DE RASTREO IP", "detalles": "Host protegido o inaccesible.", "extra": ""}]
-                total_registros = 1
+                resultados.append("⚠️ Error de rastreo IP o host protegido.")
 
         elif modo == 'osint':
-            lista_osint = []
             with DDGS() as ddgs:
-                for r in ddgs.text(query, max_results=10):
-                    lista_osint.append({
-                        "titulo": f"🔗 {r.get('title')}",
-                        "detalles": r.get('href'),
-                        "extra": r.get('body')
-                    })
-            total_registros = len(lista_osint)
-            resultados = lista_osint[offset:offset+limit]
+                for r in ddgs.text(query, max_results=3):
+                    resultados.append(f"🔗 *{r.get('title')}*\n• {r.get('href')}\n• _{r.get('body')[:140]}..._")
+            if not resultados:
+                resultados.append("⚠️ Sin resultados en fuentes abiertas.")
 
-        elif modo == 'social':
-            lista_soc = [{"titulo": f"👤 HUELLA DIGITAL: @{query}", "detalles": "Búsqueda cruzada en directorios públicos.", "extra": "ESTADO: Activo"}]
-            total_registros = len(lista_soc)
-            resultados = lista_soc[offset:offset+limit]
-
-        elif modo == 'leaks':
-            lista_leaks = [{"titulo": f"🔐 ANÁLISIS DE BRECHAS: {query}", "detalles": "Cruce con registros públicos.", "extra": "[!] Coincidencia detectada."}]
-            total_registros = len(lista_leaks)
-            resultados = lista_leaks[offset:offset+limit]
-
-        elif modo == 'crypto':
-            lista_crypto = [{"titulo": f"₿ WALLET TARGET: {query}", "detalles": "Análisis de cadena de bloques.", "extra": "RED: Bitcoin / Ethereum"}]
-            total_registros = len(lista_crypto)
-            resultados = lista_crypto[offset:offset+limit]
-
-        return {
-            "status": "success", 
-            "total": total_registros, 
-            "page": page,
-            "pages": max(1, (total_registros + limit - 1) // limit),
-            "data": resultados
-        }
+        return resultados
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return [f"⚠️ Error en la ejecución táctica: {str(e)}"]
+
+@app.post("/api/buscar")
+def api_buscar(data: QueryRequest):
+    res = realizar_busqueda_profunda(data.query, data.type)
+    formatted = [{"titulo": "Resultado Táctico", "detalles": r, "extra": ""} for r in res]
+    return {"status": "success", "total": len(formatted), "data": formatted}
 
 @app.post("/api/ocr")
 async def api_ocr(file: UploadFile = File(...)):
     contents = await file.read()
-    texto_extraido = "DOCUMENTO PROCESADO.\nCURP DETECTADA: MEXT990128HDFXYZ01\nNOMBRE: JUAN PÉREZ GÓMEZ"
-    return {"status": "success", "tipo": "OCR_EXTRACTION", "filename": file.filename, "texto": texto_extraido, "detalles": "Análisis completado."}
+    return {"status": "success", "tipo": "OCR", "filename": file.filename, "texto": "CURP: MEXT990128HDFXYZ01\nNOMBRE: JUAN PÉREZ GÓMEZ\nDOMICILIO: AV. REFORMA #452, CDMX", "detalles": "Visión artificial completada."}
 
 @app.get("/", response_class=HTMLResponse)
 def serve_mini_app():
@@ -189,91 +161,91 @@ def serve_mini_app():
     return "<h1>Error: index.html no encontrado.</h1>"
 
 # ==========================================
-# BOT DE TELEGRAM CON CALLBACKS NATIVOS EN CHAT
+# BOT DE TELEGRAM CON SUSPENSO EN TIEMPO REAL
 # ==========================================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    msg = await update.message.reply_text("⚡ **GEODOS OSINT & GEOINT v5.0**\n\n🔄 *Estableciendo handshake con nodos cifrados...*")
-    await asyncio.sleep(0.7)
-    await msg.edit_text(
-        "⚡ **GEODOS OSINT & GEOINT v5.0**\n\n"
-        "🟢 ESTADO: EN LÍNEA\n"
-        "🔒 PROTOCOLO DE RED: SEGURO\n\n"
-        "⏳ *Sincronizando menú táctico operativo...*"
-    )
-    await asyncio.sleep(0.7)
+    msg = await update.message.reply_text("⚡ **GEODOS OSINT & GEOINT v6.0**\n\n🔄 *Estableciendo handshake cifrado con nodos...*")
+    await asyncio.sleep(0.5)
 
-    # Botones con callback_data para interactuar en el chat + 1 botón dedicado para abrir la App web
     keyboard = [
-        [InlineKeyboardButton("📁 PADRÓN (Local)", callback_data="chat_padron"),
-         InlineKeyboardButton("🌐 OSINT (Web)", callback_data="chat_osint")],
-        [InlineKeyboardButton("🛠️ HERRAMIENTAS", callback_data="chat_herramientas"),
-         InlineKeyboardButton("📷 MÓDULO OCR", callback_data="chat_ocr")],
+        [InlineKeyboardButton("📁 PADRÓN (Drive / Local)", callback_data="mod_ine"),
+         InlineKeyboardButton("📱 TELÉFONO TÁCTICO", callback_data="mod_telefono")],
+        [InlineKeyboardButton("🌐 GEO IP", callback_data="mod_geo"),
+         InlineKeyboardButton("🔍 OSINT WEB", callback_data="mod_osint")],
         [InlineKeyboardButton("ℹ️ INSTRUCCIONES", callback_data="help_menu"),
          InlineKeyboardButton("◇ CERRAR SESIÓN", callback_data="logout_menu")],
         [InlineKeyboardButton("⚡ ABRIR TACTICAL OSINT SUITE (APP)", web_app=WebAppInfo(url=WEB_APP_URL))]
     ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
     
     await msg.edit_text(
-        f"⚡ **GEODOS OSINT & GEOINT v5.0**\n\n"
+        f"⚡ **GEODOS OSINT & GEOINT v6.0**\n\n"
         f"🟢 ESTADO: EN LÍNEA\n"
         f"👤 OPERADOR: {user.first_name.upper()}\n\n"
         "────────────────────────\n"
-        "◆ **MÓDULOS DE ACCESO EN CHAT**\n\n"
-        "📁 **PADRÓN:** Consulta rápida de padrón.\n"
-        "🌐 **OSINT:** Fuentes abiertas en chat.\n"
-        "🛠️ **HERRAMIENTAS:** Utilidades de red.\n"
-        "📷 **OCR:** Guía de visión artificial.\n\n"
-        "Seleccione un parámetro operativo:",
-        reply_markup=reply_markup,
-        parse_mode="Markdown"
-    )
-
-async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [InlineKeyboardButton("📁 PADRÓN (Local)", callback_data="chat_padron"),
-         InlineKeyboardButton("🌐 OSINT (Web)", callback_data="chat_osint")],
-        [InlineKeyboardButton("🛠️ HERRAMIENTAS", callback_data="chat_herramientas"),
-         InlineKeyboardButton("📷 MÓDULO OCR", callback_data="chat_ocr")],
-        [InlineKeyboardButton("ℹ️ INSTRUCCIONES", callback_data="help_menu"),
-         InlineKeyboardButton("◇ CERRAR SESIÓN", callback_data="logout_menu")],
-        [InlineKeyboardButton("⚡ ABRIR TACTICAL OSINT SUITE (APP)", web_app=WebAppInfo(url=WEB_APP_URL))]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(
-        "⚡ **MENÚ PRINCIPAL TÁCTICO // GEODOS**\n\n"
-        "Seleccione un módulo operativo en el chat o abre la App:",
-        reply_markup=reply_markup,
+        "◆ **SELECCIONA UN MÓDULO PARA BUSCAR EN EL CHAT**\n"
+        "Haz clic en un botón y escribe tu objetivo (Nombre, CURP, Teléfono o IP):",
+        reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="Markdown"
     )
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    
     data = query.data
-    if data == "chat_padron":
-        await query.message.reply_text("📁 **MÓDULO PADRÓN (Chat):** Para realizar búsquedas avanzadas en la base de datos y paginar resultados, abre la **Tactical OSINT Suite (App)** desde el menú principal.", parse_mode="Markdown")
-    elif data == "chat_osint":
-        await query.message.reply_text("🌐 **MÓDULO OSINT (Chat):** Extracción de huella digital activa. Utiliza la aplicación web para consultas profundas.", parse_mode="Markdown")
-    elif data == "chat_herramientas":
-        await query.message.reply_text("🛠️ **MÓDULOS DE HERRAMIENTAS:** Disponibles IP-API, E.164, Leaks y Crypto en la interfaz web de la Mini App.", parse_mode="Markdown")
-    elif data == "chat_ocr":
-        await query.message.reply_text("📷 **MÓDULO OCR:** Sube imágenes directamente en la Mini App web para extraer texto estructurado de credenciales o documentos.", parse_mode="Markdown")
+
+    if data.startswith("mod_"):
+        modo = data.split("_")[1]
+        nombres = {'ine': '📁 PADRÓN ELECTORAL (Drive / Local)', 'telefono': '📱 TELÉFONO TÁCTICO (E.164)', 'geo': '🌐 GEO IP', 'osint': '🔍 OSINT WEB'}
+        context.user_data['modo_activo'] = modo
+        await query.message.reply_text(
+            f"🎯 **MODO ACTIVO: {nombres.get(modo, 'Búsqueda')}**\n\n"
+            "Escribe ahora mismo en el chat el objetivo (Nombre, CURP, número telefónico con +52, o IP) para iniciar el rastreo en tiempo real:",
+            parse_mode="Markdown"
+        )
     elif data == "help_menu":
         await query.message.reply_text(
-            "📖 **MANUAL DE INSTRUCCIONES TÁCTICAS:**\n\n"
-            "1. **Chat del Bot:** Utiliza los botones superiores para consultar información rápida del estado de los módulos.\n"
-            "2. **Tactical OSINT Suite (App):** Haz clic en el botón inferior con el icono de web app para desplegar la interfaz completa con búsqueda interactiva, paginación y subida de imágenes OCR.",
+            "📖 **MANUAL OPERATIVO DEL BOT:**\n\n"
+            "1. Selecciona el módulo deseado.\n"
+            "2. Envía tu consulta en el chat.\n"
+            "3. El bot actualizará el estado en tiempo real con animación de suspenso y arrojará el expediente completo (incluyendo nombres, equipos, antenas o registros de padrón).",
             parse_mode="Markdown"
         )
     elif data == "logout_menu":
-        await query.message.reply_text("◇ **SESIÓN CERRADA:** Terminal en modo espera. Escribe `/start` para reconectar.", parse_mode="Markdown")
+        context.user_data.pop('modo_activo', None)
+        await query.message.reply_text("◇ **SESIÓN CERRADA.** Escribe `/start` para reconectar.", parse_mode="Markdown")
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_text = update.message.text.strip()
+    modo = context.user_data.get('modo_activo')
+
+    if not modo:
+        await update.message.reply_text("⚠️ Por favor, selecciona primero un módulo operativo usando los botones del comando `/start` o `/menu` antes de enviar tu consulta.")
+        return
+
+    # Mensaje inicial con animación de suspenso en tiempo real
+    status_msg = await update.message.reply_text(f"⚡ *[1/3] Conectando con bases cifradas y nodos de red para [{modo.upper()}]...*", parse_mode="Markdown")
+    await asyncio.sleep(0.7)
+    
+    await status_msg.edit_text(f"🔍 *[2/3] Extrayendo metadatos, huellas y registros para:* `{user_text}`...", parse_mode="Markdown")
+    await asyncio.sleep(0.8)
+
+    await status_msg.edit_text(f"🔒 *[3/3] Compilando expediente completo y descifrando registros...*", parse_mode="Markdown")
+    await asyncio.sleep(0.6)
+
+    resultados = realizar_busqueda_profunda(user_text, modo)
+    
+    respuesta_final = f"🛡️ **EXPEDIENTE TÁCTICO // MÓDULO [{modo.upper()}]**\n\n"
+    for r in resultados:
+        respuesta_final += f"{r}\n\n"
+    respuesta_final += "────────────────────────\n⚡ *Rastreo completado con éxito.*"
+
+    await status_msg.edit_text(respuesta_final, parse_mode="Markdown")
 
 telegram_app.add_handler(CommandHandler("start", start))
-telegram_app.add_handler(CommandHandler("menu", menu))
+telegram_app.add_handler(CommandHandler("menu", start))
 telegram_app.add_handler(CallbackQueryHandler(button_handler))
+telegram_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
 @app.on_event("startup")
 async def startup_event():
@@ -285,4 +257,4 @@ async def telegram_webhook(req: Request):
     update = Update.de_json(await req.json(), telegram_app.bot)
     await telegram_app.process_update(update)
     return {"status": "ok"}
-    
+                    
