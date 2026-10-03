@@ -189,36 +189,82 @@ def serve_mini_app():
     return "<h1>Error: index.html no encontrado.</h1>"
 
 # ==========================================
-# BOT DE TELEGRAM INDEPENDIENTE (SIN MEZCLAR)
+# BOT DE TELEGRAM CON MENÚ TÁCTICO Y SUSPENSO
 # ==========================================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    msg = await update.message.reply_text("⚡ **GEODOS OSINT TERMINAL**\n\n🔄 *Estableciendo handshake con nodos cifrados...*")
+    msg = await update.message.reply_text("⚡ **GEODOS OSINT & GEOINT v5.0**\n\n🔄 *Estableciendo handshake con nodos cifrados...*")
     await asyncio.sleep(0.7)
     await msg.edit_text(
-        f"🛡️ **ACCESO TÁCTICO CONCEDIDO // {user.first_name.upper()}**\n\n"
-        "Terminal conectada por Webhook de alta velocidad.\n"
-        "Haz clic abajo para desplegar la suite operativa independiente:"
+        "⚡ **GEODOS OSINT & GEOINT v5.0**\n\n"
+        "🟢 ESTADO: EN LÍNEA\n"
+        "🔒 PROTOCOLO DE RED: SEGURO\n\n"
+        "⏳ *Sincronizando módulos tácticos y de visión OCR...*"
     )
+    await asyncio.sleep(0.7)
 
     keyboard = [
-        [InlineKeyboardButton("⚡ ABRIR TACTICAL OSINT SUITE", web_app=WebAppInfo(url=WEB_APP_URL))]
+        [InlineKeyboardButton("📁 PADRÓN (Local)", web_app=WebAppInfo(url=WEB_APP_URL)),
+         InlineKeyboardButton("🌐 OSINT (Web)", web_app=WebAppInfo(url=WEB_APP_URL))],
+        [InlineKeyboardButton("🛠️ HERRAMIENTAS", web_app=WebAppInfo(url=WEB_APP_URL)),
+         InlineKeyboardButton("📷 MÓDULO OCR", web_app=WebAppInfo(url=WEB_APP_URL))],
+        [InlineKeyboardButton("ℹ️ INSTRUCCIONES", callback_data="help_menu"),
+         InlineKeyboardButton("◇ CERRAR SESIÓN", callback_data="logout_menu")]
     ]
-    await msg.edit_reply_markup(reply_markup=InlineKeyboardMarkup(keyboard))
-
-async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [InlineKeyboardButton("⚡ ABRIR TACTICAL OSINT SUITE", web_app=WebAppInfo(url=WEB_APP_URL))]
-    ]
-    await update.message.reply_text(
-        "📂 **MENÚ TÁCTICO // GEODOS**\n\n"
-        "Haz clic abajo para abrir la interfaz web operativa:",
-        reply_markup=InlineKeyboardMarkup(keyboard),
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await msg.edit_text(
+        f"⚡ **GEODOS OSINT & GEOINT v5.0**\n\n"
+        f"🟢 ESTADO: EN LÍNEA\n"
+        f"👤 OPERADOR: {user.first_name.upper()}\n\n"
+        "────────────────────────\n"
+        "◆ **MÓDULOS DE ACCESO PRINCIPAL**\n\n"
+        "📁 **PADRÓN:** Búsqueda cifrada.\n"
+        "🌐 **OSINT:** Fuentes abiertas.\n"
+        "🛠️ **HERRAMIENTAS:** IP, E.164, Leaks.\n"
+        "📷 **OCR:** Visión artificial.\n\n"
+        "Seleccione un parámetro operativo:",
+        reply_markup=reply_markup,
         parse_mode="Markdown"
     )
 
+async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [
+        [InlineKeyboardButton("📁 PADRÓN (Local)", web_app=WebAppInfo(url=WEB_APP_URL)),
+         InlineKeyboardButton("🌐 OSINT (Web)", web_app=WebAppInfo(url=WEB_APP_URL))],
+        [InlineKeyboardButton("🛠️ HERRAMIENTAS", web_app=WebAppInfo(url=WEB_APP_URL)),
+         InlineKeyboardButton("📷 MÓDULO OCR", web_app=WebAppInfo(url=WEB_APP_URL))],
+        [InlineKeyboardButton("ℹ️ INSTRUCCIONES", callback_data="help_menu"),
+         InlineKeyboardButton("◇ CERRAR SESIÓN", callback_data="logout_menu")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(
+        "⚡ **MENÚ PRINCIPAL TÁCTICO // GEODOS**\n\n"
+        "Seleccione un módulo operativo:",
+        reply_markup=reply_markup,
+        parse_mode="Markdown"
+    )
+
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    if query.data == "help_menu":
+        await query.message.reply_text(
+            "📖 **MANUAL DE INSTRUCCIONES TÁCTICAS:**\n\n"
+            "1. **INE / Padrón:** Consulta registros de identidad.\n"
+            "2. **Teléfono:** Análisis de metadatos E.164.\n"
+            "3. **Geo IP / Redes / Leaks / Crypto:** Rastreo avanzado de red.\n"
+            "4. **OCR Visión:** Extrae texto y datos desde imágenes.\n"
+            "5. **Paginación:** Navega entre múltiples resultados.",
+            parse_mode="Markdown"
+        )
+    elif query.data == "logout_menu":
+        await query.message.reply_text("◇ **SESIÓN CERRADA:** Terminal en modo espera. Escribe `/start` para reconectar.", parse_mode="Markdown")
+
 telegram_app.add_handler(CommandHandler("start", start))
 telegram_app.add_handler(CommandHandler("menu", menu))
+telegram_app.add_handler(CallbackQueryHandler(button_handler))
 
 @app.on_event("startup")
 async def startup_event():
@@ -230,4 +276,4 @@ async def telegram_webhook(req: Request):
     update = Update.de_json(await req.json(), telegram_app.bot)
     await telegram_app.process_update(update)
     return {"status": "ok"}
-                
+    
