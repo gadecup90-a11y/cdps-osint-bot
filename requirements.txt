@@ -5,3 +5,4 @@ requests
 duckduckgo-search
 phonenumbers
 python-multipart
+python-telegram-bot
