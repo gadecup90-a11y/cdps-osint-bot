@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import requests
+import asyncio
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,7 +11,7 @@ import phonenumbers
 from phonenumbers import geocoder, carrier, timezone, number_type
 
 from telegram import Update, WebAppInfo, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
 # ==========================================
 # 1. CONFIGURACIÓN DE FASTAPI & TELEGRAM BOT
@@ -18,7 +19,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 TOKEN = "8596194498:AAFuL6e9NQ5Iu3MHjAD_brMWZHipYbWSfdA"
 WEB_APP_URL = "https://cdps-osint-bot.onrender.com"
 
-app = FastAPI(title="CDPS OSINT Tactical Suite", version="5.0")
+app = FastAPI(title="GEODOS OSINT Suite", version="4.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -162,61 +163,106 @@ MINI_APP_HTML = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CDPS // Tactical OSINT Suite</title>
+<title>GEODOS // OSINT & GEOINT</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 :root {
-    --bg-color: #0c0a09; --panel-bg: #1c1917; --border-color: #78350f;
-    --accent: #fbbf24; --accent-green: #22c55e; --accent-red: #ef4444;
-    --text-main: #f5f5f4; --text-muted: #a8a29e;
+    --bg-color: #020617; --panel-bg: rgba(6, 11, 25, 0.90); --border-color: rgba(0, 240, 255, 0.25);
+    --accent-cyan: #00f0ff; --accent-green: #10b981; --accent-red: #ef4444;
+    --text-main: #f8fafc; --text-muted: #64748b;
 }
-body { background-color: var(--bg-color); color: var(--text-main); font-family: 'Share Tech Mono', monospace; margin: 0; padding: 12px; padding-bottom: 60px; font-size: 14px; }
-.header { background: var(--panel-bg); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; box-shadow: 0 0 10px rgba(251,191,36,0.1); }
-.card { background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
-.grid-menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 12px; }
-.cell-btn { background: #0c0a09; border: 1px solid #78350f; color: var(--text-muted); padding: 8px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; text-align: center; font-weight: bold; font-family: 'Share Tech Mono', monospace; transition: 0.2s; }
-.cell-btn.active { background: rgba(251, 191, 36, 0.15); color: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px rgba(251,191,36,0.3); }
-.input-group { display: flex; gap: 6px; margin-top: 8px; }
-input { flex: 1; background: #0c0a09; border: 1px solid var(--border-color); color: var(--accent); padding: 10px; border-radius: 6px; outline: none; font-size: 14px; font-family: 'Share Tech Mono', monospace; }
-button.exec-btn { background: var(--accent); color: #000; border: none; padding: 10px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; font-family: 'Share Tech Mono', monospace; box-shadow: 0 0 8px rgba(251,191,36,0.4); }
-.scanner-line { width: 100%; height: 2px; background: var(--accent); position: relative; animation: scan 1.5s infinite linear; display: none; margin-top: 10px; box-shadow: 0 0 8px var(--accent); }
+body { 
+    background-color: var(--bg-color); 
+    background-image: 
+        radial-gradient(circle at 50% 15%, rgba(0, 240, 255, 0.12) 0%, transparent 60%),
+        linear-gradient(to bottom, #020617 0%, #030a1c 100%);
+    color: var(--text-main); 
+    font-family: 'Share Tech Mono', monospace; 
+    margin: 0; padding: 12px; padding-bottom: 60px; font-size: 14px; 
+}
+.main-title { text-align: center; margin-bottom: 14px; }
+.main-title h1 { color: #fff; font-size: 26px; margin: 0; letter-spacing: 3px; text-shadow: 0 0 12px rgba(0,240,255,0.6); }
+.main-title span { color: var(--accent-cyan); font-size: 11px; letter-spacing: 4px; opacity: 0.9; }
+
+.header { 
+    background: var(--panel-bg); border: 1px solid var(--border-color); padding: 10px 14px; 
+    border-radius: 10px; display: flex; justify-content: space-between; align-items: center; 
+    margin-bottom: 12px; backdrop-filter: blur(8px); box-shadow: 0 0 15px rgba(0,240,255,0.08); 
+}
+.card { 
+    background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; 
+    padding: 14px; margin-bottom: 12px; backdrop-filter: blur(8px);
+    box-shadow: 0 0 25px rgba(0,240,255,0.06); 
+}
+.grid-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+.cell-btn { 
+    background: #020617; border: 1px solid rgba(0, 240, 255, 0.2); color: var(--text-muted); padding: 8px 6px; 
+    border-radius: 6px; font-size: 11px; cursor: pointer; text-align: center; font-weight: bold; 
+    font-family: 'Share Tech Mono', monospace; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cell-btn.active { 
+    background: rgba(0, 240, 255, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); 
+    box-shadow: 0 0 10px rgba(0,240,255,0.4); text-shadow: 0 0 5px rgba(0,240,255,0.6); 
+}
+.input-group { display: flex; gap: 6px; margin-top: 10px; }
+input { 
+    flex: 1; background: #020617; border: 1px solid var(--border-color); color: var(--accent-cyan); 
+    padding: 10px 12px; border-radius: 6px; outline: none; font-size: 14px; font-family: 'Share Tech Mono', monospace; 
+}
+button.exec-btn { 
+    background: var(--accent-cyan); color: #000; border: none; padding: 10px 16px; border-radius: 6px; 
+    font-weight: bold; cursor: pointer; font-size: 13px; font-family: 'Share Tech Mono', monospace; 
+    box-shadow: 0 0 12px rgba(0,240,255,0.5); display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.scanner-line { width: 100%; height: 2px; background: var(--accent-cyan); position: relative; animation: scan 1.5s infinite linear; display: none; margin-top: 10px; box-shadow: 0 0 10px var(--accent-cyan); }
 @keyframes scan { 0% { opacity: 0.2; transform: translateY(-3px); } 50% { opacity: 1; transform: translateY(3px); } 100% { opacity: 0.2; transform: translateY(-3px); } }
-.result-item { background: #0c0a09; border-left: 3px solid var(--accent); padding: 10px; margin-top: 8px; border-radius: 4px; font-size: 12px; word-break: break-all; line-height: 1.4; }
-.status-indicator { display: inline-block; width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; margin-right: 5px; box-shadow: 0 0 6px var(--accent-green); }
+.result-item { background: #020617; border-left: 3px solid var(--accent-cyan); padding: 10px; margin-top: 8px; border-radius: 4px; font-size: 12px; word-break: break-all; line-height: 1.4; border: 1px solid rgba(0,240,255,0.15); }
+.status-indicator { display: inline-block; width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; margin-right: 5px; box-shadow: 0 0 8px var(--accent-green); }
 </style>
 </head>
 <body>
+
+<div class="main-title">
+    <h1>GEODOS</h1>
+    <span>OSINT &amp; GEOINT</span>
+</div>
+
 <div class="header">
 <div>
-<div id="username" style="font-weight: bold; color: var(--accent); font-size: 14px;">OPERADOR</div>
-<div id="userid" style="font-size: 10px; color: var(--text-muted);">ID: SECURE_NODE</div>
+<div id="username" style="font-weight: bold; color: var(--accent-cyan); font-size: 13px;">CONECTADO</div>
+<div id="userid" style="font-size: 10px; color: var(--text-muted);">ID: 6482757502</div>
 </div>
-<div style="font-size: 11px; color: var(--accent-green); border: 1px solid var(--accent-green); padding: 4px 8px; border-radius: 4px; font-weight: bold;">
+<div style="font-size: 11px; color: var(--accent-green); border: 1px solid rgba(16,185,129,0.4); padding: 4px 8px; border-radius: 4px; font-weight: bold; background: rgba(16,185,129,0.05);">
 <span class="status-indicator"></span>ONLINE
 </div>
 </div>
+
 <div class="card">
-<h3 style="margin-top: 0; font-size: 13px; color: var(--accent);">⚡ TACTICAL MATRIX OSINT v5.0</h3>
-<p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;" id="descModo">Selecciona un módulo táctico de consulta abajo:</p>
+<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+    <span style="color: var(--accent-cyan); font-size: 16px;">⚡</span>
+    <b style="color: #fff; font-size: 14px; letter-spacing: 1px;">TACTICAL MATRIX OSINT CLOUD</b>
+</div>
+<p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;" id="descModo">Consulta estructurada en base de datos cifrada (INE).</p>
 
 <div class="grid-menu">
-<div class="cell-btn active" onclick="cambiarModo('ine', this, 'Base de datos local cifrada (INE).', 'Nombre o CURP...')">📁 INE DB</div>
-<div class="cell-btn" onclick="cambiarModo('telefono', this, 'Análisis de metadatos, carrier y plan E.164.', '+52...')">📱 TELÉFONO</div>
-<div class="cell-btn" onclick="cambiarModo('geo', this, 'Geolocalización satelital de IP / Host.', '8.8.8.8...')">🌐 GEO IP</div>
+<div class="cell-btn active" onclick="cambiarModo('ine', this, 'Consulta estructurada en base de datos cifrada (INE).', 'Nombre o CURP...')">📁 INE DB</div>
+<div class="cell-btn" onclick="cambiarModo('telefono', this, 'Análisis avanzado de metadatos, carrier y plan E.164.', '+52...')">📱 TELÉFONO</div>
+<div class="cell-btn" onclick="cambiarModo('geo', this, 'Geolocalización satelital avanzada de IP / Host.', '8.8.8.8...')">🌐 GEOGRÁFICO</div>
 <div class="cell-btn" onclick="cambiarModo('osint', this, 'Búsqueda profunda en fuentes abiertas web.', 'Alias u objetivo...')">🔍 OSINT WEB</div>
-<div class="cell-btn" onclick="cambiarModo('social', this, 'Rastreo de perfiles en redes sociales.', 'Username...')">👤 REDES</div>
-<div class="cell-btn" onclick="cambiarModo('leaks', this, 'Verificación de credenciales en brechas.', 'Correo o usuario...')">🔐 LEAKS DB</div>
-<div class="cell-btn" onclick="cambiarModo('crypto', this, 'Rastreo y análisis de wallets cripto.', 'Wallet BTC / ETH...')">₿ CRYPTO</div>
+<div class="cell-btn" onclick="cambiarModo('social', this, 'Rastreo de huella digital y perfiles en redes.', 'Username...')">👤 REDES</div>
+<div class="cell-btn" onclick="cambiarModo('leaks', this, 'Verificación de credenciales en brechas de datos.', 'Correo o usuario...')">🔐 LEAKS DB</div>
+<div class="cell-btn" onclick="cambiarModo('crypto', this, 'Rastreo y análisis táctico de wallets cripto.', 'Wallet BTC / ETH...')">₿ CRYPTO</div>
 </div>
 
 <div class="input-group">
 <input type="text" id="queryInput" placeholder="Nombre o CURP...">
-<button class="exec-btn" onclick="ejecutarBusqueda()">EJECUTAR</button>
+<button class="exec-btn" onclick="ejecutarBusqueda()">EJECUTAR ➔</button>
 </div>
 <div id="scanner" class="scanner-line"></div>
 <div id="results" style="margin-top: 10px;"></div>
 </div>
+
 <script>
 let modoActual = 'ine';
 let tg = window.Telegram.WebApp;
@@ -252,7 +298,7 @@ async function ejecutarBusqueda() {
             let html = "";
             result.data.forEach((item) => {
                 html += `<div class="result-item">
-                    <b style="color: var(--accent); font-size: 13px;">${item.titulo}</b><br>
+                    <b style="color: var(--accent-cyan); font-size: 13px;">${item.titulo}</b><br>
                     <span style="color: var(--text-main); font-size: 12px;">${item.detalles}</span><br>
                     <span style="color: var(--text-muted); font-size: 11px;">${item.extra}</span>
                 </div>`;
@@ -275,41 +321,79 @@ async function ejecutarBusqueda() {
 def serve_mini_app():
     return MINI_APP_HTML
 
+# ==========================================
+# 2. BOT DE TELEGRAM CON SUSPENSO Y PROCESO
+# ==========================================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
+    
+    # Mensaje inicial con suspenso en tiempo real
+    msg = await update.message.reply_text(
+        "🔹 **CDPS // INTELLIGENCE TERMINAL**\n\n"
+        "⚡ *Iniciando protocolo de enlace seguro...*"
+    )
+    await asyncio.sleep(0.8)
+    await msg.edit_text(
+        "🔹 **CDPS // INTELLIGENCE TERMINAL**\n\n"
+        "🟢 ESTADO: EN LÍNEA\n"
+        "🔒 PROTOCOLO: ACTIVO\n\n"
+        "⏳ *Cargando módulos tácticos del sistema...*"
+    )
+    await asyncio.sleep(0.8)
+
     keyboard = [
-        [InlineKeyboardButton("⚡ ABRIR TACTICAL OSINT SUITE", web_app=WebAppInfo(url=WEB_APP_URL))]
+        [InlineKeyboardButton("📁 PADRÓN (Local)", web_app=WebAppInfo(url=WEB_APP_URL)),
+         InlineKeyboardButton("🌐 OSINT (Web)", web_app=WebAppInfo(url=WEB_APP_URL))],
+        [InlineKeyboardButton("🛠️ HERRAMIENTAS", web_app=WebAppInfo(url=WEB_APP_URL)),
+         InlineKeyboardButton("📊 DIAGNÓSTICO", callback_data="diag_menu")],
+        [InlineKeyboardButton("ℹ️ INSTRUCCIONES", callback_data="help_menu"),
+         InlineKeyboardButton("◇ CERRAR SESIÓN", callback_data="logout_menu")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(
-        f"🛡️ **ACCESO TÁCTICO CONCEDIDO // {user.first_name.upper()}**\n\n"
-        "Terminal conectada por Webhook de alta velocidad.\n"
-        "Haz clic abajo para desplegar la suite operativa.",
+    
+    await msg.edit_text(
+        f"🔹 **CDPS // INTELLIGENCE TERMINAL**\n\n"
+        f"🟢 ESTADO: EN LÍNEA\n"
+        f"🔒 PROTOCOLO: ACTIVO\n"
+        f"👤 OPERADOR: {user.first_name.upper()}\n\n"
+        "────────────────────────\n"
+        "◆ **MÓDULOS DE ACCESO**\n\n"
+        "📁 **PADRÓN (Local):** Búsqueda encriptada en la base de datos interna.\n"
+        "🌐 **OSINT (Web):** Extracción de huella digital en fuentes abiertas.\n"
+        "🛠️ **HERRAMIENTAS:** Geolocalización IP, análisis telefónico avanzado y alias.\n\n"
+        "────────────────────────\n"
+        "Seleccione un parámetro operativo:",
         reply_markup=reply_markup,
         parse_mode="Markdown"
     )
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [InlineKeyboardButton("⚡ ABRIR TACTICAL OSINT SUITE", web_app=WebAppInfo(url=WEB_APP_URL))]
+        [InlineKeyboardButton("📁 PADRÓN (Local)", web_app=WebAppInfo(url=WEB_APP_URL)),
+         InlineKeyboardButton("🌐 OSINT (Web)", web_app=WebAppInfo(url=WEB_APP_URL))],
+        [InlineKeyboardButton("🛠️ HERRAMIENTAS", web_app=WebAppInfo(url=WEB_APP_URL)),
+         InlineKeyboardButton("📊 DIAGNÓSTICO", callback_data="diag_menu")],
+        [InlineKeyboardButton("ℹ️ INSTRUCCIONES", callback_data="help_menu"),
+         InlineKeyboardButton("◇ CERRAR SESIÓN", callback_data="logout_menu")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("📂 **MENÚ PRINCIPAL TÁCTICO**", reply_markup=reply_markup, parse_mode="Markdown")
+    await update.message.reply_text(
+        "🔹 **CDPS // MENÚ TÁCTICO**\n\n"
+        "Seleccione un módulo operativo:",
+        reply_markup=reply_markup,
+        parse_mode="Markdown"
+    )
+
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    if query.data == "diag_menu":
+        await query.message.reply_text("📊 **DIAGNÓSTICO DE NODO:** Conexión cifrada establecida con Render. Latencia de red óptima.", parse_mode="Markdown")
+    elif query.data == "help_menu":
+        await query.message.reply_text("ℹ️ **MANUAL OPERATIVO:** Utiliza los botones superiores para desplegar la suite web o consulta los comandos de red.", parse_mode="Markdown")
+    elif query.data == "logout_menu":
+        await query.message.reply_text("◇ **SESIÓN FINALIZADA:** Terminal en modo espera. Escribe `/start` para reconectar.", parse_mode="Markdown")
 
 telegram_app.add_handler(CommandHandler("start", start))
-telegram_app.add_handler(CommandHandler("menu", menu))
-
-@app.on_event("startup")
-async def startup_event():
-    await telegram_app.initialize()
-    webhook_url = f"{WEB_APP_URL}/webhook"
-    await telegram_app.bot.set_webhook(url=webhook_url)
-    print(f"[+] Webhook de Telegram configurado exitosamente en: {webhook_url}")
-
-@app.post("/webhook")
-async def telegram_webhook(req: Request):
-    data = await req.json()
-    update = Update.de_json(data, telegram_app.bot)
-    await telegram_app.process_update(update)
-    return {"status": "ok"}
-                                            
+telegram_app.add_ha
