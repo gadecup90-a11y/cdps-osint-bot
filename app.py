@@ -15,7 +15,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 # ==========================================
 # 1. CONFIGURACIÓN DE FASTAPI & TELEGRAM BOT
 # ==========================================
-TOKEN = "8375866730:AAFQWVJjYwEkriVBK9AjkVaMwvo7ysc0oKE"
+TOKEN = "8596194498:AAFuL6e9NQ5Iu3MHjAD_brMWZHipYbWSfdA"
 WEB_APP_URL = "https://cdps-osint-bot.onrender.com"
 
 app = FastAPI(title="CDPS OSINT Tactical Suite", version="5.0")
