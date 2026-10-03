@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OSINT CDPS — Artificial Intelligence Matrix</title>
+    <title>TACTICAL MATRIX OSINT CLOUD v5.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         :root {
             --bg-base: #02040a;
-            --panel-bg: rgba(6, 12, 24, 0.94);
-            --border-cyan: rgba(56, 189, 248, 0.4);
+            --panel-bg: rgba(6, 12, 24, 0.95);
+            --border-cyan: rgba(56, 189, 248, 0.35);
         }
         body { 
             background: var(--bg-base);
@@ -20,250 +20,173 @@
         .matrix-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 30%, #0d1b2a 0%, #02040a 80%);
+            background: radial-gradient(circle at 50% 30%, #0d1b2a 0%, #02040a 85%);
             z-index: -2;
-        }
-        .particle {
-            position: absolute;
-            width: 2px; height: 2px;
-            background: #38bdf8;
-            box-shadow: 0 0 8px #38bdf8;
-            animation: floatParticle 6s infinite linear;
-            z-index: -1;
-            opacity: 0.6;
-        }
-        @keyframes floatParticle {
-            0% { transform: translateY(100vh) scale(0); opacity: 0; }
-            50% { opacity: 0.8; }
-            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
         }
         .enterprise-panel { 
             background: var(--panel-bg);
             border: 1px solid var(--border-cyan);
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.15);
-            backdrop-filter: blur(14px);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.1);
+            backdrop-filter: blur(12px);
         }
         .tool-btn {
-            background: rgba(10, 20, 38, 0.85);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(10, 20, 38, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            transition: all 0.2s ease;
         }
         .tool-btn:hover {
             border-color: #38bdf8;
             background: rgba(14, 30, 55, 0.95);
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
         }
         .tool-btn.active {
-            background: linear-gradient(135deg, #0369a1, #0284c7);
+            background: rgba(14, 30, 55, 1);
             border-color: #38bdf8;
-            color: #ffffff;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+            color: #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
         }
         .nav-item.active {
             color: #38bdf8;
-            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+            text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
         }
         .nav-item.active svg {
             stroke: #38bdf8;
-            filter: drop-shadow(0 0 5px #38bdf8);
         }
         .tab-view { display: none; }
         .tab-view.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="p-4 max-w-xl mx-auto pb-28">
+<body class="p-3 max-w-xl mx-auto pb-28">
 
     <div class="matrix-bg"></div>
-    <div id="particleField"></div>
 
-    <!-- HEADER EJECUTIVO CON LOGOTIPO OFICIAL OSINT CDPS -->
-    <header class="enterprise-panel p-4 mb-4 rounded-xl flex justify-between items-center border-t-2 border-sky-400">
-        <div class="flex items-center space-x-3.5">
-            <div class="w-12 h-12 rounded-xl overflow-hidden border-2 border-sky-400 shadow-lg shadow-sky-500/50 flex-shrink-0 bg-black relative flex items-center justify-center">
-                <span class="text-[9px] font-black text-sky-200 tracking-wider text-center leading-tight drop-shadow-[0_0_4px_#38bdf8]">OSINT<br>CDPS</span>
-            </div>
-            <div>
-                <h1 class="text-xs font-black tracking-wider text-white uppercase flex items-center gap-1.5">
-                    OSINT <span class="text-sky-400">CDPS</span> 
-                    <span class="text-[9px] px-1.5 py-0.2 bg-sky-950 text-sky-300 rounded border border-sky-800 animate-pulse">PRO LIVE</span>
-                </h1>
-                <p class="text-[10px] text-gray-400">OPERADOR: <span class="text-sky-300 font-semibold">CERVANDO</span></p>
-            </div>
+    <!-- TARJETA SUPERIOR OPERADOR -->
+    <header class="enterprise-panel p-3 mb-3 rounded-xl flex justify-between items-center">
+        <div>
+            <h2 class="text-xs font-bold text-sky-300 tracking-wider">CERVANDO</h2>
+            <p class="text-[10px] text-gray-400">ID: 6482757502</p>
         </div>
-        <div class="text-right">
-            <div class="flex items-center justify-end space-x-1.5 text-[10px]">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping absolute"></span>
-                <span class="w-2 h-2 rounded-full bg-emerald-400 relative"></span>
-                <span class="text-emerald-300 font-bold tracking-wide">CONSCIENCIA LIVE</span>
-            </div>
-            <p id="liveClock" class="text-[10px] text-sky-300 font-mono mt-0.5 font-bold">--:--:--</p>
+        <div class="flex items-center space-x-1.5 bg-sky-950/80 px-2.5 py-1 rounded-lg border border-sky-800">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-[10px] text-emerald-400 font-bold tracking-wider">ONLINE</span>
         </div>
     </header>
 
-    <!-- ================= VISTA 1: BÚSQUEDA / INTELIGENCIA ================= -->
-    <main id="view-search" class="tab-view active space-y-4">
+    <!-- VISTA PRINCIPAL -->
+    <main id="view-search" class="tab-view active space-y-3">
         
-        <!-- SELECTOR DE MÓDULOS -->
-        <div class="enterprise-panel p-4 rounded-xl">
-            <div class="flex justify-between items-center mb-3">
-                <h2 class="text-[11px] font-bold text-gray-200 uppercase tracking-widest flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span> Módulos de Inteligencia Neural
-                </h2>
-                <span id="lblCostoActivo" class="text-[10px] text-sky-400 font-semibold bg-sky-950/80 px-2 py-0.5 rounded border border-sky-800">Costo: 6 Créditos</span>
+        <!-- PANEL TACTICAL MATRIX -->
+        <div class="enterprise-panel p-3.5 rounded-xl space-y-3">
+            <div class="flex items-center space-x-2 text-xs font-bold text-white tracking-wide">
+                <span class="text-yellow-400 text-sm">⚡</span>
+                <h1>TACTICAL MATRIX OSINT CLOUD v5.0</h1>
             </div>
-            
-            <div class="grid grid-cols-3 gap-2 text-xs">
-                <button onclick="setHerramienta('telefono', 'Telcel / Celda E.164', '6', this)" class="tool-btn active p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
-                    <span class="text-base">📱</span>
-                    <span class="truncate">Teléfono</span>
-                </button>
-                <button onclick="setHerramienta('ine', 'Padrón Electoral 24GB', '6', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
-                    <span class="text-base">📁</span>
+
+            <!-- GRILLA DE MÓDULOS 2 COLUMNAS (ESTILO ORIGINAL) -->
+            <div class="grid grid-cols-2 gap-2 text-xs">
+                <button onclick="setHerramienta('ine', 'Padrón Electoral 24GB', 'Desglosa registros oficiales de identidad.', this)" class="tool-btn p-2.5 rounded-lg text-left flex items-center space-x-2 font-medium">
+                    <span>📁</span>
                     <span class="truncate">INE DB</span>
                 </button>
-                <button onclick="setHerramienta('osint', 'OSINT Fuentes Abiertas', '4', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
-                    <span class="text-base">🔍</span>
-                    <span class="truncate">OSINT Web</span>
+                <button onclick="setHerramienta('telefono', 'Análisis E.164, carrier, zona y plan activo.', 'Desglosa metadatos de telefonía global E.164. Entrega: Operador, país, tipo de línea y zona horaria.', this)" class="tool-btn active p-2.5 rounded-lg text-left flex items-center space-x-2 font-medium">
+                    <span>📱</span>
+                    <span class="truncate">TELÉFONO</span>
                 </button>
-                <button onclick="setHerramienta('covid', 'Registro Epidemiológico COVID', '5', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
-                    <span class="text-base">🏥</span>
-                    <span class="truncate">Base COVID</span>
+                <button onclick="setHerramienta('geo', 'Geolocalización IP / Célula', 'Ubica coordenadas y proveedor de red.', this)" class="tool-btn p-2.5 rounded-lg text-left flex items-center space-x-2 font-medium">
+                    <span>🌐</span>
+                    <span class="truncate">GEO IP</span>
                 </button>
-                <button onclick="setHerramienta('financial', 'Buró & Historial Financiero', '8', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
-                    <span class="text-base">💳</span>
-                    <span class="truncate">Financiero</span>
+                <button onclick="setHerramienta('osint', 'OSINT Fuentes Abiertas', 'Escanea registros públicos en red.', this)" class="tool-btn p-2.5 rounded-lg text-left flex items-center space-x-2 font-medium">
+                    <span>🔍</span>
+                    <span class="truncate">OSINT WEB</span>
                 </button>
-                <button onclick="setHerramienta('ocr', 'OCR Visión HD', '3', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1">
-                    <span class="text-base">👁</span>
-                    <span class="truncate">OCR Visión</span>
+                <button onclick="setHerramienta('redes', 'Mapeo de Redes Sociales', 'Busca perfiles vinculados en plataformas.', this)" class="tool-btn p-2.5 rounded-lg text-left flex items-center space-x-2 font-medium">
+                    <span>👤</span>
+                    <span class="truncate">REDES</span>
                 </button>
-                <button onclick="setHerramienta('facial', 'Biometría Facial OSINT', '10', this)" class="tool-btn p-2.5 rounded-lg text-left font-medium flex flex-col gap-1 col-span-3 items-center justify-center flex-row">
-                    <span class="text-base">👤</span>
-                    <span>Reconocimiento Facial por Rostro (IA)</span>
+                <button onclick="setHerramienta('leaks', 'Leaks & Filtraciones DB', 'Consulta bases de datos vulneradas.', this)" class="tool-btn p-2.5 rounded-lg text-left flex items-center space-x-2 font-medium">
+                    <span>🔓</span>
+                    <span class="truncate">LEAKS DB</span>
+                </button>
+                <button onclick="setHerramienta('crypto', 'Análisis de Wallets Crypto', 'Rastreo de transacciones y blockchain.', this)" class="tool-btn p-2.5 rounded-lg text-left flex items-center space-x-2 font-medium">
+                    <span>₿</span>
+                    <span class="truncate">CRYPTO</span>
+                </button>
+                <button onclick="setHerramienta('ocr', 'OCR Visión HD', 'Extracción de texto en documentos e imágenes.', this)" class="tool-btn p-2.5 rounded-lg text-left flex items-center space-x-2 font-medium">
+                    <span>👁</span>
+                    <span class="truncate">OCR VISIÓN</span>
                 </button>
             </div>
-        </div>
 
-        <!-- INPUT DE BÚSQUEDA Y MASIVO -->
-        <div class="enterprise-panel p-4 rounded-xl">
-            <div id="inputTextoContainer">
-                <label id="lblInputLabel" class="block text-[10px] text-sky-300 mb-1.5 uppercase tracking-wider font-semibold">Parámetro de Búsqueda (Individual o Masivo x línea):</label>
+            <!-- INPUT Y EJECUTAR -->
+            <div class="space-y-2 pt-1">
                 <div class="flex gap-2">
-                    <textarea id="searchInput" rows="2" placeholder="+528180797772 o múltiples blancos..." class="w-full bg-black/80 border border-sky-900/60 rounded-lg p-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-sky-400 transition shadow-inner"></textarea>
-                    <button onclick="ejecutarAnalisis()" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 rounded-lg text-xs transition shadow-lg shadow-sky-500/30 whitespace-nowrap active:scale-95 self-end py-3">
-                        Ejecutar ⚡
+                    <textarea id="searchInput" rows="2" placeholder="+528180797772" class="w-full bg-black/80 border border-sky-900/60 rounded-lg p-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-sky-400 shadow-inner">+528180797772</textarea>
+                    <button onclick="ejecutarAnalisis()" class="bg-sky-500 hover:bg-sky-400 text-black font-extrabold px-4 rounded-lg text-xs transition shadow-lg shadow-sky-500/20 whitespace-nowrap active:scale-95 self-end py-3 flex items-center gap-1">
+                        EJECUTAR <span>→</span>
                     </button>
                 </div>
-            </div>
 
-            <div id="inputArchivoContainer" class="hidden">
-                <label class="block text-[10px] text-sky-300 mb-1.5 uppercase tracking-wider font-semibold">Cargar Archivo / Fotografía Objetivo:</label>
-                <input type="file" id="fileInput" accept="image/*,.pdf" class="w-full text-xs text-gray-300 border border-sky-900/60 rounded-lg p-2 bg-black/80 file:bg-sky-950 file:text-sky-300 file:border-0 file:rounded file:text-xs file:mr-3">
-                <button onclick="ejecutarAnalisis()" class="w-full mt-2.5 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-lg shadow-sky-500/30 active:scale-95">
-                    Procesar Archivo Neural ⚡
-                </button>
+                <!-- DESCRIPCIÓN DE LA HERRAMIENTA (ESTILO ORIGINAL) -->
+                <div id="descHerramienta" class="p-2.5 bg-black/60 border border-sky-950 rounded-lg text-[10px] text-gray-400 leading-relaxed">
+                    <span class="text-sky-400 font-bold">¿Qué hace?</span> Desglosa metadatos de telefonía global E.164. Entrega: Operador, país, tipo de línea y zona horaria.
+                </div>
             </div>
         </div>
 
-        <!-- RESULTADOS TÁCTICOS -->
-        <div class="enterprise-panel p-4 rounded-xl">
-            <div class="flex justify-between items-center mb-2.5 border-b border-sky-950 pb-2">
-                <h3 class="text-xs font-bold text-gray-200 uppercase tracking-wide flex items-center gap-1.5">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Informe Pericial / Resultados
-                </h3>
-                <span id="contadorResultados" class="text-[10px] text-sky-400 font-mono font-semibold bg-sky-950/60 px-2 py-0.5 rounded border border-sky-900">0 registros</span>
-            </div>
-            
-            <div id="resultadoTactico" class="text-xs text-sky-100 whitespace-pre-wrap font-mono min-h-[140px] py-1 leading-relaxed">
-                <span class="text-gray-500">[ Sistema consciente OSINT CDPS en línea. Ingrese objetivos individuales o en lote... ]</span>
-            </div>
-
-            <!-- PAGINACIÓN -->
-            <div id="paginacionContainer" class="hidden flex justify-between items-center mt-3 pt-2 border-t border-sky-950 text-xs">
-                <button onclick="cambiarPagina(-1)" id="btnAnterior" class="px-3.5 py-1.5 bg-black border border-sky-900 text-sky-300 rounded-lg hover:bg-sky-950 transition">← Anterior</button>
-                <span id="lblPagina" class="text-sky-400 font-semibold text-[11px]">Página 1 de 1</span>
-                <button onclick="cambiarPagina(1)" id="btnSiguiente" class="px-3.5 py-1.5 bg-black border border-sky-900 text-sky-300 rounded-lg hover:bg-sky-950 transition">Siguiente →</button>
+        <!-- RESULTADO TÁCTICO -->
+        <div class="enterprise-panel p-3.5 rounded-xl space-y-2">
+            <h3 class="text-xs font-bold text-sky-300 uppercase tracking-wide">Resultado Táctico</h3>
+            <div id="resultadoTactico" class="text-xs text-sky-100 whitespace-pre-wrap font-mono min-h-[100px] leading-relaxed">
+                <span class="text-gray-500">[ Sistema en espera de parámetros de consulta... ]</span>
             </div>
         </div>
     </main>
 
-    <!-- ================= VISTA 2: HISTORIAL ================= -->
-    <main id="view-history" class="tab-view space-y-4">
+    <!-- VISTA HISTORIAL -->
+    <main id="view-history" class="tab-view space-y-3">
         <div class="enterprise-panel p-4 rounded-xl">
-            <div class="flex justify-between items-center mb-3 border-b border-sky-950 pb-2">
-                <h2 class="text-xs font-bold text-white uppercase tracking-wide">📁 Historial Neuronal</h2>
-                <button onclick="limpiarHistorial()" class="text-[10px] bg-red-950/60 border border-red-900 text-red-400 px-2.5 py-1 rounded hover:bg-red-900/50 transition">Limpiar</button>
-            </div>
-            <div id="listaHistorial" class="text-xs space-y-2 max-h-80 overflow-y-auto">
-                <p class="text-gray-500 text-center py-6">Sin consultas recientes registradas en memoria.</p>
+            <h2 class="text-xs font-bold text-white uppercase tracking-wide mb-3">Historial Neuronal</h2>
+            <div id="listaHistorial" class="text-xs space-y-2">
+                <p class="text-gray-500 text-center py-4">Sin registros recientes.</p>
             </div>
         </div>
     </main>
 
-    <!-- ================= VISTA 3: TIENDA VIP ================= -->
-    <main id="view-store" class="tab-view space-y-4">
+    <!-- VISTA TIENDA VIP -->
+    <main id="view-store" class="tab-view space-y-3">
         <div class="enterprise-panel p-4 rounded-xl">
-            <h2 class="text-xs font-bold text-white uppercase tracking-wide mb-1">💎 Membresía & Créditos OSINT CDPS</h2>
-            <p class="text-[11px] text-gray-400 mb-4">Desbloquea procesamiento masivo ilimitado.</p>
-            
-            <div class="space-y-2.5 text-xs">
-                <div class="p-3.5 bg-black/80 border border-sky-900/50 rounded-xl flex justify-between items-center hover:border-sky-400 transition">
-                    <div>
-                        <p class="font-bold text-sky-400">⚡ Paquete Mini (60 Créditos)</p>
-                        <p class="text-[10px] text-gray-400">Incluye 10 bonus de cortesía</p>
-                    </div>
-                    <button onclick="alert('Redirigiendo a pasarela segura...')" class="bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 py-2 rounded-lg transition shadow-md shadow-sky-500/30">$25.00</button>
-                </div>
-            </div>
+            <h2 class="text-xs font-bold text-white uppercase tracking-wide mb-2">Tienda VIP & Créditos</h2>
+            <p class="text-[11px] text-gray-400">Desbloquea consultas ilimitadas y procesamiento masivo.</p>
         </div>
     </main>
 
-    <!-- ================= VISTA 4: CUENTA ================= -->
-    <main id="view-account" class="tab-view space-y-4">
+    <!-- VISTA CUENTA -->
+    <main id="view-account" class="tab-view space-y-3">
         <div class="enterprise-panel p-4 rounded-xl">
-            <div class="flex items-center space-x-3.5 mb-4 border-b border-sky-950 pb-3.5">
-                <div class="w-12 h-12 rounded-xl bg-sky-950 border border-sky-500 flex items-center justify-center text-sky-300 font-bold text-base shadow-inner">
-                    C
-                </div>
-                <div>
-                    <h3 class="text-xs font-bold text-white tracking-wide">CERVANDO N.</h3>
-                    <p class="text-[10px] text-sky-400">ID: 6482757502 • <span class="text-emerald-400 font-bold">Enlace Activo</span></p>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
-                <div class="p-3 bg-black/80 border border-sky-900/60 rounded-xl">
-                    <span class="text-[10px] text-gray-400 block">Créditos</span>
-                    <span class="text-sm font-bold text-yellow-400">3 Créditos</span>
-                </div>
-                <div class="p-3 bg-black/80 border border-sky-900/60 rounded-xl">
-                    <span class="text-[10px] text-gray-400 block">Acceso</span>
-                    <span class="text-sm font-bold text-emerald-400">Autorizado PRO</span>
-                </div>
-            </div>
+            <h2 class="text-xs font-bold text-white uppercase tracking-wide mb-2">Perfil de Operador</h2>
+            <p class="text-[11px] text-gray-400">Operador: CERVANDO (ID: 6482757502)</p>
         </div>
     </main>
 
     <!-- BARRA DE NAVEGACIÓN INFERIOR FIJA -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-[#02040a]/95 border-t border-sky-950 p-2 flex justify-around text-xs max-w-xl mx-auto backdrop-blur-md z-50 shadow-2xl">
-        <button onclick="cambiarVista('search', this)" class="nav-item active flex flex-col items-center gap-1 text-sky-400 font-semibold px-4 py-1 transition">
+    <nav class="fixed bottom-0 left-0 right-0 bg-[#02040a]/95 border-t border-sky-950 p-2 flex justify-around text-xs max-w-xl mx-auto backdrop-blur-md z-50">
+        <button onclick="cambiarVista('search', this)" class="nav-item active flex flex-col items-center gap-1 text-sky-400 font-semibold px-3 py-1 transition">
             <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             <span>Búsqueda</span>
         </button>
-        <button onclick="cambiarVista('history', this)" class="nav-item flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 px-4 py-1 transition">
+        <button onclick="cambiarVista('history', this)" class="nav-item flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 px-3 py-1 transition">
             <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span>Historial</span>
         </button>
-        <button onclick="cambiarVista('store', this)" class="nav-item flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 px-4 py-1 transition">
+        <button onclick="cambiarVista('store', this)" class="nav-item flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 px-3 py-1 transition">
             <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span>Tienda VIP</span>
         </button>
-        <button onclick="cambiarVista('account', this)" class="nav-item flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 px-4 py-1 transition">
+        <button onclick="cambiarVista('account', this)" class="nav-item flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200 px-3 py-1 transition">
             <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
             <span>Mi Cuenta</span>
         </button>
@@ -272,24 +195,6 @@
     <script>
         let herramientaActual = 'telefono';
         const userId = 6482757502;
-        let resultadosGlobales = [];
-        let paginaActual = 1;
-        const porPagina = 2;
-
-        const field = document.getElementById('particleField');
-        for (let i = 0; i < 20; i++) {
-            let p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = Math.random() * 100 + 'vw';
-            p.style.animationDuration = (4 + Math.random() * 6) + 's';
-            p.style.animationDelay = (Math.random() * 5) + 's';
-            field.appendChild(p);
-        }
-
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('liveClock').innerText = now.toTimeString().split(' ')[0];
-        }, 1000);
 
         function cambiarVista(vistaId, btn) {
             document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
@@ -301,42 +206,52 @@
             });
             btn.classList.add('active', 'text-sky-400');
             btn.classList.remove('text-gray-400');
-
-            if(vistaId === 'history') cargarHistorialUI();
         }
 
-        function setHerramienta(herramienta, nombre, costo, btn) {
+        function setHerramienta(herramienta, descripcion, queHace, btn) {
             herramientaActual = herramienta;
             document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            document.getElementById('lblCostoActivo').innerText = `Costo: ${costo} Créditos`;
-            document.getElementById('lblInputLabel').innerText = `Parámetro de Búsqueda (${nombre} - Soporta Multitarget x línea):`;
-
-            if(herramienta === 'ocr' || herramienta === 'facial') {
-                document.getElementById('inputTextoContainer').classList.add('hidden');
-                document.getElementById('inputArchivoContainer').classList.remove('hidden');
-            } else {
-                document.getElementById('inputTextoContainer').classList.remove('hidden');
-                document.getElementById('inputArchivoContainer').classList.add('hidden');
-            }
+            document.getElementById('descHerramienta').innerHTML = `<span class="text-sky-400 font-bold">¿Qué hace?</span> ${queHace}`;
         }
 
         async function ejecutarAnalisis() {
             const resultadoBox = document.getElementById('resultadoTactico');
-            const paginacionDiv = document.getElementById('paginacionContainer');
-            paginacionDiv.classList.add('hidden');
+            const textoRaw = document.getElementById('searchInput').value.trim();
 
-            resultadoBox.innerHTML = `<span class="text-sky-400 animate-pulse font-mono">⚡ [IA OSINT CDPS: ANALIZANDO NÚCLEO]...\n█▒▒▒▒▒▒▒▒▒ 25% - Conectando con 'ine.db'...</span>`;
-            await new Promise(r => setTimeout(r, 400));
+            if(!textoRaw) {
+                alert("Ingresa un objetivo.");
+                return;
+            }
+
+            resultadoBox.innerHTML = `<span class="text-sky-400 animate-pulse font-mono">⚡ Procesando consulta en Tactical Matrix...</span>`;
 
             try {
-                if (herramientaActual === 'ocr' || herramientaActual === 'facial') {
-                    const fileInput = document.getElementById('fileInput');
-                    if(fileInput.files.length === 0) {
-                        alert("Sube un archivo válido.");
-                        resultadoBox.innerHTML = '<span class="text-yellow-400">[!] Error: Ningún archivo seleccionado.</span>';
-                        return;
-                    }
-                    const formData = new FormData();
-                    formData.append("file", fileInput
+                const lineas = textoRaw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+                if (lineas.length > 1) {
+                    const res = await fetch('/api/masivo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userId, queries: lineas, type: herramientaActual })
+                    });
+                    const data = await res.json();
+                    resultadoBox.innerHTML = (data.data || []).map(d => `<div class="mb-2 p-2 border border-sky-900 bg-black/60 rounded">${d.detalles}</div>`).join('');
+                } else {
+                    const res = await fetch('/api/buscar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userId, query: lineas[0], type: herramientaActual })
+                    });
+                    const data = await res.json();
+                    resultadoBox.innerHTML = (data.data || []).map(d => `<div class="p-2 border border-sky-900 bg-black/60 rounded">${d.detalles}</div>`).join('');
+                }
+            } catch (err) {
+                resultadoBox.innerHTML = `<span class="text-red-400">⚠️ Error conectando con el núcleo.</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
+
