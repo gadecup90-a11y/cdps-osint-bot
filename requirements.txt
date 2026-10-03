@@ -5,3 +5,4 @@ requests
 duckduckgo-search
 phonenumbers
 pillow
+python-multipart
