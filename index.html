@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEODOS // OSINT & GEOINT</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+:root {
+    --bg-color: #020617; --panel-bg: rgba(6, 11, 25, 0.90); --border-color: rgba(0, 240, 255, 0.25);
+    --accent-cyan: #00f0ff; --accent-green: #10b981; --accent-red: #ef4444;
+    --text-main: #f8fafc; --text-muted: #64748b;
+}
+body { 
+    background-color: var(--bg-color); 
+    background-image: 
+        radial-gradient(circle at 50% 15%, rgba(0, 240, 255, 0.12) 0%, transparent 60%),
+        linear-gradient(to bottom, #020617 0%, #030a1c 100%);
+    color: var(--text-main); 
+    font-family: 'Share Tech Mono', monospace; 
+    margin: 0; padding: 12px; padding-bottom: 70px; font-size: 14px; 
+}
+.main-title { text-align: center; margin-bottom: 12px; }
+.main-title h1 { color: #fff; font-size: 24px; margin: 0; letter-spacing: 3px; text-shadow: 0 0 12px rgba(0,240,255,0.6); }
+.main-title span { color: var(--accent-cyan); font-size: 11px; letter-spacing: 4px; opacity: 0.9; }
+.header { 
+    background: var(--panel-bg); border: 1px solid var(--border-color); padding: 10px 14px; 
+    border-radius: 10px; display: flex; justify-content: space-between; align-items: center; 
+    margin-bottom: 12px; backdrop-filter: blur(8px); box-shadow: 0 0 15px rgba(0,240,255,0.08); 
+}
+.card { 
+    background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 10px; 
+    padding: 14px; margin-bottom: 12px; backdrop-filter: blur(8px);
+    box-shadow: 0 0 25px rgba(0,240,255,0.06); 
+}
+.grid-menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 12px; }
+.cell-btn { 
+    background: #020617; border: 1px solid rgba(0, 240, 255, 0.2); color: var(--text-muted); padding: 8px 10px; 
+    border-radius: 6px; font-size: 12px; cursor: pointer; text-align: center; font-weight: bold; 
+    font-family: 'Share Tech Mono', monospace; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cell-btn.active { 
+    background: rgba(0, 240, 255, 0.2); color: var(--accent-cyan); border-color: var(--accent-cyan); 
+    box-shadow: 0 0 10px rgba(0,240,255,0.4); text-shadow: 0 0 5px rgba(0,240,255,0.6); 
+}
+.input-group { display: flex; gap: 6px; margin-top: 10px; }
+input { 
+    flex: 1; background: #020617; border: 1px solid var(--border-color); color: var(--accent-cyan); 
+    padding: 10px 12px; border-radius: 6px; outline: none; font-size: 14px; font-family: 'Share Tech Mono', monospace; 
+}
+button.exec-btn { 
+    background: var(--accent-cyan); color: #000; border: none; padding: 10px 16px; border-radius: 6px; 
+    font-weight: bold; cursor: pointer; font-size: 13px; font-family: 'Share Tech Mono', monospace; 
+    box-shadow: 0 0 12px rgba(0,240,255,0.5); display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.scanner-line { width: 100%; height: 2px; background: var(--accent-cyan); position: relative; animation: scan 1.5s infinite linear; display: none; margin-top: 10px; box-shadow: 0 0 10px var(--accent-cyan); }
+@keyframes scan { 0% { opacity: 0.2; transform: translateY(-3px); } 50% { opacity: 1; transform: translateY(3px); } 100% { opacity: 0.2; transform: translateY(-3px); } }
+.result-item { background: #020617; border-left: 3px solid var(--accent-cyan); padding: 10px; margin-top: 8px; border-radius: 4px; font-size: 12px; word-break: break-all; line-height: 1.4; border: 1px solid rgba(0,240,255,0.15); }
+.status-indicator { display: inline-block; width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; margin-right: 5px; box-shadow: 0 0 8px var(--accent-green); }
+.pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 12px; }
+.page-btn { background: #020617; border: 1px solid var(--border-color); color: var(--accent-cyan); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-family: 'Share Tech Mono', monospace; }
+.info-box { font-size: 11px; color: var(--text-muted); background: #020617; padding: 8px; border-radius: 6px; margin-top: 8px; border: 1px dashed var(--border-color); }
+</style>
+</head>
+<body>
+
+<div class="main-title">
+    <h1>GEODOS</h1>
+    <span>OSINT &amp; GEOINT</span>
+</div>
+
+<div class="header">
+<div>
+<div id="username" style="font-weight: bold; color: var(--accent-cyan); font-size: 13px;">OPERADOR</div>
+<div id="userid" style="font-size: 10px; color: var(--text-muted);">ID: 6482757502</div>
+</div>
+<div style="font-size: 11px; color: var(--accent-green); border: 1px solid rgba(16,185,129,0.4); padding: 4px 8px; border-radius: 4px; font-weight: bold; background: rgba(16,185,129,0.05);">
+<span class="status-indicator"></span>ONLINE
+</div>
+</div>
+
+<div class="card">
+<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+    <span style="color: var(--accent-cyan); font-size: 16px;">⚡</span>
+    <b style="color: #fff; font-size: 14px; letter-spacing: 1px;">TACTICAL MATRIX OSINT CLOUD v5.0</b>
+</div>
+<p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;" id="descModo">Selecciona un módulo táctico de consulta abajo:</p>
+
+<div class="grid-menu">
+<div class="cell-btn active" onclick="cambiarModo('ine', this, '📁 INE DB: Búsqueda estructurada en base de datos cifrada de padrón.', 'Nombre o CURP...')">📁 INE DB</div>
+<div class="cell-btn" onclick="cambiarModo('telefono', this, '📱 TELÉFONO: Análisis E.164, carrier, zona y plan activo.', '+52...')">📱 TELÉFONO</div>
+<div class="cell-btn" onclick="cambiarModo('geo', this, '🌐 GEO IP: Rastreo de geolocalización satelital y host.', '8.8.8.8...')">🌐 GEO IP</div>
+<div class="cell-btn" onclick="cambiarModo('osint', this, '🔍 OSINT WEB: Extracción profunda en fuentes abiertas.', 'Alias u objetivo...')">🔍 OSINT WEB</div>
+<div class="cell-btn" onclick="cambiarModo('social', this, '👤 REDES: Cruce de huella digital en perfiles sociales.', 'Username...')">👤 REDES</div>
+<div class="cell-btn" onclick="cambiarModo('leaks', this, '🔐 LEAKS DB: Verificación de brechas de seguridad.', 'Correo o usuario...')">🔐 LEAKS DB</div>
+<div class="cell-btn" onclick="cambiarModo('crypto', this, '₿ CRYPTO: Monitoreo de cadena de bloques y wallets.', 'Wallet BTC / ETH...')">₿ CRYPTO</div>
+<div class="cell-btn" onclick="cambiarModo('ocr', this, '📷 OCR VISIÓN: Sube una foto para extraer texto y datos.', 'Subir imagen...')">📷 OCR VISIÓN</div>
+</div>
+
+<div id="inputSection" class="input-group">
+<input type="text" id="queryInput" placeholder="Nombre o CURP...">
+<button class="exec-btn" onclick="ejecutarBusqueda(1)">EJECUTAR ➔</button>
+</div>
+
+<div id="ocrSection" style="display:none; margin-top: 8px;">
+<input type="file" id="ocrFile" accept="image/*" style="width:100%; margin-bottom:6px; background:#020617; color:var(--accent-cyan); border:1px solid var(--border-color); padding:8px; border-radius:6px;">
+<button class="exec-btn" onclick="ejecutarOCR()" style="width:100%;">PROCESAR IMAGEN OCR ➔</button>
+</div>
+
+<div class="info-box" id="infoFuncion">
+<b>¿Qué hace esta función?</b> Consulta registros de identidad en bases de datos cifradas locales.<br>
+<b>Entrega:</b> Nombre completo, CURP, edad y domicilio verificado.
+</div>
+
+<div id="scanner" class="scanner-line"></div>
+<div id="results" style="margin-top: 10px;"></div>
+<div id="paginationContainer" class="pagination" style="display:none;"></div>
+</div>
+
+<script>
+let modoActual = 'ine';
+let paginaActual = 1;
+let tg = window.Telegram.WebApp;
+tg.expand();
+if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+    document.getElementById('username').innerText = tg.initDataUnsafe.user.first_name.toUpperCase();
+    document.getElementById('userid').innerText = "ID: " + tg.initDataUnsafe.user.id;
+}
+
+const descripciones = {
+    'ine': { desc: "📁 INE DB: Búsqueda estructurada en base de datos cifrada de padrón.", info: "¿Qué hace? Consulta registros de identidad en bases de datos cifradas.<br>Entrega: Nombre, CURP, edad y domicilio.", ph: "Nombre o CURP..." },
+    'telefono': { desc: "📱 TELÉFONO: Análisis E.164, carrier, zona y plan activo.", info: "¿Qué hace? Desglosa metadatos de telefonía global E.164.<br>Entrega: Operador, país, tipo de línea y zona horaria.", ph: "+52..." },
+    'geo': { desc: "🌐 GEO IP: Rastreo de geolocalización satelital y host.", info: "¿Qué hace? Obtiene coordenadas y proveedor de direcciones IP.<br>Entrega: Ciudad, región, ISP y coordenadas cartográficas.", ph: "8.8.8.8..." },
+    'osint': { desc: "🔍 OSINT WEB: Extracción profunda en fuentes abiertas.", info: "¿Qué hace? Realiza consultas avanzadas en buscadores web.<br>Entrega: Enlaces relevantes, títulos y resúmenes de fuentes abiertas.", ph: "Alias u objetivo..." },
+    'social': { desc: "👤 REDES: Cruce de huella digital en perfiles sociales.", info: "¿Qué hace? Rasta perfiles en redes (GitHub, Twitter, Telegram, etc.).<br>Entrega: Enlaces directos a cuentas públicas asociadas.", ph: "Username..." },
+    'leaks': { desc: "🔐 LEAKS DB: Verificación de brechas de seguridad.", info: "¿Qué hace? Analiza cruces en registros históricos de credenciales.<br>Entrega: Alertas de exposición y vectores de filtración.", ph: "Correo o usuario..." },
+    'crypto': { desc: "₿ CRYPTO: Monitoreo de cadena de bloques y wallets.", info: "¿Qué hace? Inspecciona nodos de red en criptomonedas.<br>Entrega: Estado de red, actividad de transacciones y balance.", ph: "Wallet BTC / ETH..." },
+    'ocr': { desc: "📷 OCR VISIÓN: Sube una foto para extraer texto y datos.", info: "¿Qué hace? Escanea imágenes para extraer texto estructurado (CURP, placas, INE).<br>Entrega: Texto plano extraído y metadatos de visión.", ph: "" }
+};
+
+function cambiarModo(modo, el, desc, placeholder) {
+    modoActual = modo;
+    paginaActual = 1;
+    document.querySelectorAll('.cell-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('descModo').innerText = desc;
+    document.getElementById('infoFuncion').innerHTML = `<b>¿Qué hace?</b> ${descripciones[modo].info}`;
+    document.getElementById('results').innerHTML = "";
+    document.getElementById('paginationContainer').style.display = "none";
+
+    if(modo === 'ocr') {
+        document.getElementById('inputSection').style.display = "none";
+        document.getElementById('ocrSection').style.display = "block";
+    } else {
+        document.getElementById('inputSection').style.display = "flex";
+        document.getElementById('ocrSection').style.display = "none";
+        document.getElementById('queryInput').placeholder = placeholder;
+    }
+}
+
+async function ejecutarBusqueda(page = 1) {
+    paginaActual = page;
+    let query = document.getElementById('queryInput').value;
+    let resContainer = document.getElementById('results');
+    let scanner = document.getElementById('scanner');
+    let pagContainer = document.getElementById('paginationContainer');
+    if(!query) return;
+    resContainer.innerHTML = "";
+    pagContainer.style.display = "none";
+    scanner.style.display = "block";
+    try {
+        let response = await fetch('/api/buscar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: 6482757502, query: query, type: modoActual, page: paginaActual })
+        });
+        let result = await response.json();
+        scanner.style.display = "none";
+        if(result.status === 'success' && result.data.length > 0) {
+            let html = "";
+            result.data.forEach((item) => {
+                html += `<div class="result-item">
+                    <b style="color: var(--accent-cyan); font-size: 13px;">${item.titulo}</b><br>
+                    <span style="color: var(--text-main); font-size: 12px;">${item.detalles}</span><br>
+                    <span style="color: var(--text-muted); font-size: 11px;">${item.extra}</span>
+                </div>`;
+            });
+            resContainer.innerHTML = html;
+
+            if(result.pages > 1) {
+                pagContainer.style.display = "flex";
+                pagContainer.innerHTML = `
+                    <button class="page-btn" ${paginaActual <= 1 ? 'disabled style="opacity:0.4;"' : ''} onclick="ejecutarBusqueda(${paginaActual - 1})">◀ ANTERIOR</button>
+                    <span style="color: var(--text-muted);">PÁGINA ${paginaActual} / ${result.pages}</span>
+                    <button class="page-btn" ${paginaActual >= result.pages ? 'disabled style="opacity:0.4;"' : ''} onclick="ejecutarBusqueda(${paginaActual + 1})">SIGUIENTE ▶</button>
+                `;
+            }
+        } else {
+            resContainer.innerHTML = "<div class='result-item' style='border-left-color: var(--accent-red); color: var(--accent-red); font-size: 12px;'>[!] SIN COINCIDENCIAS EN ESTE SECTOR.</div>";
+        }
+    } catch(err) {
+        scanner.style.display = "none";
+        resContainer.innerHTML = "<div class='result-item' style='border-left-color: var(--accent-red); color: var(--accent-red); font-size: 12px;'>[X] ERROR DE CONEXIÓN CON EL BACKEND.</div>";
+    }
+}
+
+async function ejecutarOCR() {
+    let fileInput = document.getElementById('ocrFile');
+    let resContainer = document.getElementById('results');
+    let scanner = document.getElementById('scanner');
+    if(fileInput.files.length === 0) return;
+    
+    let formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    resContainer.innerHTML = "";
+    scanner.style.display = "block";
+    try {
+        let response = await fetch('/api/ocr', { method: 'POST', body: formData });
+        let result = await response.json();
+        scanner.style.display = "none";
+        resContainer.innerHTML = `<div class="result-item">
+            <b style="color: var(--accent-cyan); font-size: 13px;">📷 RESULTADO OCR TÁCTICO</b><br>
+            <span style="color: var(--text-main); font-size: 12px; white-space: pre-line;">${result.texto}</span><br>
+            <span style="color: var(--text-muted); font-size: 11px;">${result.detalles}</span>
+        </div>`;
+    } catch(err) {
+        scanner.style.display = "none";
+        resContainer.innerHTML = "<div class='result-item' style='border-left-color: var(--accent-red); color: var(--accent-red); font-size: 12px;'>[X] ERROR AL PROCESAR IMAGEN OCR.</div>";
+    }
+}
+</script>
+</body>
+</html>
